@@ -10,26 +10,10 @@ workflow annotate_functional_variants {
 
     parameter_meta {
         GENE_NAME: "Name of relevant gene"
-        ASSEMBLY: "Default: GRCh38"
-        CHR_ID: "Name of chromosome in number"
-        GENE_START_LOCUS: "start position of gene"
-        GENE_END_LOCUS: "end position of gene"
-        REMOVE_INTRONIC_VAR: "Should variants in introns be removed? Default: true"
-        REMOVE_SPLICING_VAR: "Should splicing variants be removed? Default: true"
-        REMOVE_NS_ENDPOINT_VAR: "Should variants past the nonsense endpoint be removed? Default: true"
-        NS_ENDPOINT: "Point where nonsense variants are not pathogenic. Default: 50 bp before end of penultimate exon"
-        ETHNICITY_2_GROUP: "Group ethnicities into Western European vs others. Ashkenazis and Finns excluded. Default: true"
 
     }
     input {
-        
-        String GENE_NAME
-
-        Int NS_ENDPOINT = 50
-
-        Boolean? REMOVE_INTRONIC_VAR = true
-        Boolean? REMOVE_SPLICING_VAR = true
-        Boolean? REMOVE_NS_ENDPOINT_VAR = true
+        String GENE_NAME    
     }
     #The order in which the workflow block and task definitions are arranged in the script does not matter. 
     #Nor does the order of the call statements matter, as we'll see further on.
@@ -178,8 +162,8 @@ task merge_clinvar_variants {
     input {
         Int memSizeGB = 4
         Int threadCount = 1
-        Int diskSizeGB = 5*round(size(basiccv, "GB")) + 20
         File basiccv  
+        Int diskSizeGB = 5*round(size(basiccv, "GB")) + 20
         File traitmap
         File traitset  
 
