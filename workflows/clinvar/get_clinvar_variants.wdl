@@ -37,7 +37,11 @@ workflow annotate_functional_variants {
         input: GENE_NAME=GENE_NAME
     }
     call merge_clinvar_variants{
-        input: GENE_NAME=GENE_NAME
+        input: 
+            GENE_NAME=GENE_NAME,
+            basiccv=get_clinvar_variants.basiccv, 
+            traitset=get_clinvar_variants.traitset, 
+            traitmap=get_clinvar_variants.traitmap
     }
 
     output{
@@ -58,9 +62,16 @@ task get_clinvar_variants {
     command <<<
         set -eux -o pipefail
 
+        esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" | efetch -format variationid -start 1 -stop 1 | 
+        xtract -pattern VariationArchive  \
+            -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
+                -element SequenceLocation@Assembly  SequenceLocation@Chr SequenceLocation@start  SequenceLocation@stop > ~{GENE_NAME}_positions.txt
+
         esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
         efetch -format variationid | 
         xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+             -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
+                -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
                 -KEYASM SequenceLocation@Assembly -KEYCHR SequenceLocation@Chr  -KEYSTART SequenceLocation@start -KEYSTOP SequenceLocation@stop -KEYREFA SequenceLocation@referenceAlleleVCF -KEYALTA SequenceLocation@alternateAlleleVCF -KEYVLEN SequenceLocation@variantLength \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop SequenceLocation@referenceAlleleVCF SequenceLocation@alternateAlleleVCF SequenceLocation@variantLength \
@@ -103,19 +114,10 @@ task get_clinvar_variants {
         sort -k1 -k2  -k3 > ~{GENE_NAME}_traitset.txt
 
         esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
-        efetch -format variationid | 
-        xtract -pattern RCVAccession -element RCVAccession@Accession > ~{GENE_NAME}_rcv_list.txt
+        efetch -format variationid | xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+            -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name |
+        sort -k2  -k3 -k4 > ~{GENE_NAME}_traitmapping.txt
 
-        efetch -db clinvar -input clinvar_rcv_list.txt -format clinvarset | 
-        xtract -pattern ClinVarSet -def "NA" -KEYVCV MeasureSet@Acc -KEYRCV  ReferenceClinVarAssertion/ClinVarAccession@Acc \
-            -block ClinVarAssertion -deq "\n" -def "NA" -element  "&KEYVCV"  "&KEYRCV" ClinVarAssertion@ID ClinVarAccession@Acc  > ~{GENE_NAME}_rcv_CAID.txt 
-
-        efetch -db clinvar -input clinvar_rcv_list.txt -format clinvarset | 
-        xtract -pattern ClinVarSet -def "NA" -KEYVCV MeasureSet@Acc -KEYRCV  ReferenceClinVarAssertion/ClinVarAccession@Acc \
-            -group ReferenceClinVarAssertion/TraitSet   -TSID TraitSet@ID \
-                -block TraitSet/Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&KEYRCV" "&TSID" Trait@ID  \
-                    -subset Trait/Name -if ElementValue@Type -equals "Preferred"   -def "NA"  -element  ElementValue \
-                    -subset Trait/XRef -if XRef@DB -equals "MedGen"   -def "NA"  -element  XRef@ID  > ~{GENE_NAME}_rcv_trait.txt
 
 
     >>>
@@ -123,16 +125,15 @@ task get_clinvar_variants {
     output {
         File basiccv  = "~{GENE_NAME}_basic_res.txt"
         File traitset  = "~{GENE_NAME}_traitset.txt"
-        File rcvlist  = "~{GENE_NAME}_rcv_list.txt"
-        File rcv_CAID  = "~{GENE_NAME}_rcv_CAID.txt"
-        File rcv_trait  = "~{GENE_NAME}_rcv_trait.txt"
+        File traitmap  = "~{GENE_NAME}_traitmapping.txt"
+        File gene_positions = "~{GENE_NAME}_positions.txt"
     }
 
     runtime {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "ubuntu:18.04"
+        docker: "docker.io/allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
         preemptible: 1
     }
 }
@@ -145,9 +146,9 @@ task merge_clinvar_variants {
     input {
         Int memSizeGB = 4
         Int threadCount = 1
-        Int diskSizeGB = 5*round(size(input_vcf, "GB")) + 20
+        Int diskSizeGB = 5*round(size(basiccv, "GB")) + 20
         File basiccv  
-        File traitmapping 
+        File traitmap
         File traitset  
         String GENE_NAME
 
@@ -156,7 +157,7 @@ task merge_clinvar_variants {
     command <<<
         set -eux -o pipefail
 
-        python3 cv_merge_script.py -f ~{basiccv} -t ~{traitmapping} -s ~{traitset}  -o  clinvar_variants.csv
+        python3 cv_merge_script.py -f ~{basiccv} -m ~{traitmap} -s ~{traitset}  -o  clinvar_variants.csv
 
 
     >>>
@@ -169,7 +170,7 @@ task merge_clinvar_variants {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "ubuntu:18.04"
+        docker: "docker.io/allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
         preemptible: 1
     }
 }

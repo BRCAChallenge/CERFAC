@@ -10,7 +10,7 @@ import gnomad
 import hail as hl
 
 
-parser = argparse.ArgumentParser(description='Merge clinvar files.')
+parser = argparse.ArgumentParser(description='Get gnomad variants.')
 parser.add_argument('-g', help='gene name', required=True)
 parser.add_argument('-c', help='chromosome number', required=True)
 parser.add_argument('-b', help='start position of gene', required=True)

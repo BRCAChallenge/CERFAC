@@ -1,0 +1,15 @@
+FROM us.gcr.io/broad-dsp-gcr-public/terra-jupyter-python:1.1.5
+
+USER root
+
+
+# If anything below this is updated, make the corresponding changes in the aou image
+ENV PIP_USER=false
+
+RUN find $JUPYTER_HOME/scripts -name '*.sh' -type f | xargs chmod +x \
+    && yes yes | sh -c "$(curl -fsSL https://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh)" \
+    && echo "export PATH=/home/jupyter/edirect:\${PATH}" >> ${HOME}/.bashrc \
+    && echo "export PATH=/home/jupyter/packages/bin/edirect:\${PATH}" >> ${HOME}/.bashrc 
+
+ENV PIP_USER=true
+USER $USER
