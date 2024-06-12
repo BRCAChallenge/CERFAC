@@ -38,7 +38,6 @@ workflow annotate_functional_variants {
     }
     call merge_clinvar_variants{
         input: 
-            GENE_NAME=GENE_NAME,
             basiccv=get_clinvar_variants.basiccv, 
             traitset=get_clinvar_variants.traitset, 
             traitmap=get_clinvar_variants.traitmap
