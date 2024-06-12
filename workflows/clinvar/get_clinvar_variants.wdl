@@ -33,13 +33,13 @@ workflow annotate_functional_variants {
     }
     #The order in which the workflow block and task definitions are arranged in the script does not matter. 
     #Nor does the order of the call statements matter, as we'll see further on.
-    call get_clinvar_variants{
+    call get_clinvar_variants_file{
         input: GENE_NAME=GENE_NAME
     }
     call extract_clinvar_variants{
         input: 
             GENE_NAME=GENE_NAME,
-            basicxml=get_clinvar_variants.basicxml
+            basicxml=get_clinvar_variants_file.basicxml
     }
     call merge_clinvar_variants{
         input: 
