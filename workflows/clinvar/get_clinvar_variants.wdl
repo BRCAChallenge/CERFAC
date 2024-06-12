@@ -36,11 +36,16 @@ workflow annotate_functional_variants {
     call get_clinvar_variants{
         input: GENE_NAME=GENE_NAME
     }
+    call extract_clinvar_variants{
+        input: 
+            GENE_NAME=GENE_NAME,
+            basicxml=get_clinvar_variants.basicxml
+    }
     call merge_clinvar_variants{
         input: 
-            basiccv=get_clinvar_variants.basiccv, 
-            traitset=get_clinvar_variants.traitset, 
-            traitmap=get_clinvar_variants.traitmap
+            basiccv=extract_clinvar_variants.basiccv, 
+            traitset=extract_clinvar_variants.traitset, 
+            traitmap=extract_clinvar_variants.traitmap
     }
 
     output{
@@ -50,7 +55,7 @@ workflow annotate_functional_variants {
 }
 
 
-task get_clinvar_variants {
+task get_clinvar_variants_file {
     input {
         String GENE_NAME
         Int memSizeGB = 4
@@ -61,15 +66,41 @@ task get_clinvar_variants {
     command <<<
         set -eux -o pipefail
 
-        esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" | efetch -format variationid -start 1 -stop 1 | 
+        esearch -db clinvar -query "~{GENE_NAME}[GENE] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" | efetch -format variationid -start 1 -stop 1 | 
         xtract -pattern VariationArchive  \
             -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly  SequenceLocation@Chr SequenceLocation@start  SequenceLocation@stop > ~{GENE_NAME}_positions.txt
 
-        esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
-        efetch -format variationid > ~{GENE_NAME}.xml
+        esearch -db clinvar -query "~{GENE_NAME}[GENE] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
+        efetch -format variationid > basic.xml
+    >>>
 
-        xtract -input ~{GENE_NAME}.xml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+    output {
+        File basicxml  = "basic.xml"
+        File gene_positions = "~{GENE_NAME}_positions.txt"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: "allisoncheney/cerfac_terra:clinvar"
+        preemptible: 1
+    }
+}
+
+
+
+task extract_clinvar_variants {
+    input {
+        String GENE_NAME
+        File basicxml  
+    }
+
+    command <<<
+        set -eux -o pipefail
+
+        xtract -input basicxml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
              -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
@@ -99,7 +130,7 @@ task get_clinvar_variants {
         sed "s/â€˜/'/g" | 
         sed "s/&amp;/&/g" > ~{GENE_NAME}_basic_res.txt
 
-        xtract -input ~{GENE_NAME}.xml  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+        xtract -input basicxml  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
                 -block TraitSet -deq "\n" -def "NA"   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
                     -subset Trait -deq "\n" -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" \
@@ -111,11 +142,11 @@ task get_clinvar_variants {
                     -subset Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE" |
         sort -k1 -k2  -k3 > ~{GENE_NAME}_traitset.txt
 
-        xtract -input ~{GENE_NAME}.xml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+        xtract -input basicxml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
             -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name |
         sort -k2  -k3 -k4 > ~{GENE_NAME}_traitmapping.txt
 
-        rm ~{GENE_NAME}.xml
+        rm basicxml
 
 
 
@@ -125,7 +156,6 @@ task get_clinvar_variants {
         File basiccv  = "~{GENE_NAME}_basic_res.txt"
         File traitset  = "~{GENE_NAME}_traitset.txt"
         File traitmap  = "~{GENE_NAME}_traitmapping.txt"
-        File gene_positions = "~{GENE_NAME}_positions.txt"
     }
 
     runtime {
@@ -136,7 +166,6 @@ task get_clinvar_variants {
         preemptible: 1
     }
 }
-
 
 
 
