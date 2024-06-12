@@ -92,6 +92,5 @@ cols = ['row_type',
 'version']
 
 clinvar_complete = clinvar_complete[cols]
-
 clinvar_complete.to_csv(args.o, sep=',', index=False )
 

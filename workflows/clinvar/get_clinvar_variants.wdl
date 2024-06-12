@@ -68,16 +68,16 @@ task get_clinvar_variants {
                 -element SequenceLocation@Assembly  SequenceLocation@Chr SequenceLocation@start  SequenceLocation@stop > ~{GENE_NAME}_positions.txt
 
         esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
-        efetch -format variationid | 
-        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+        efetch -format variationid > ~{GENE_NAME}.xml
+
+        xtract -input ~{GENE_NAME}.xml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
              -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
                 -KEYASM SequenceLocation@Assembly -KEYCHR SequenceLocation@Chr  -KEYSTART SequenceLocation@start -KEYSTOP SequenceLocation@stop -KEYREFA SequenceLocation@referenceAlleleVCF -KEYALTA SequenceLocation@alternateAlleleVCF -KEYVLEN SequenceLocation@variantLength \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop SequenceLocation@referenceAlleleVCF SequenceLocation@alternateAlleleVCF SequenceLocation@variantLength \
             -group ClassifiedRecord/SimpleAllele/HGVSlist/HGVS -if NucleotideExpression@MANESelect -equals true \
-                -def "NA"  -first MolecularConsequence@Type NucleotideExpression@change  -KEYCHANGE NucleotideExpression@change \
-                -KEYCONS -first MolecularConsequence@Type \
+                -def "NA" -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type -first MolecularConsequence@Type NucleotideExpression@change   \
             -group ClassifiedRecord/SimpleAllele/ -element "&KEYVDC"  "&KEYVDLU"  "&KEYVMRS"  \
             -group ClassifiedRecord/Classifications -if GermlineClassification -def "NA" -element GermlineClassification/ReviewStatus GermlineClassification/Description  \
                     -else -lbl "NA\tNA" \
@@ -100,8 +100,7 @@ task get_clinvar_variants {
         sed "s/â€˜/'/g" | 
         sed "s/&amp;/&/g" > ~{GENE_NAME}_basic_res.txt
 
-        esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |    efetch -format variationid | 
-        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+        xtract -input ~{GENE_NAME}.xml  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
                 -block TraitSet -deq "\n" -def "NA"   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
                     -subset Trait -deq "\n" -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" \
@@ -113,10 +112,11 @@ task get_clinvar_variants {
                     -subset Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE" |
         sort -k1 -k2  -k3 > ~{GENE_NAME}_traitset.txt
 
-        esearch -db clinvar -query "~{GENE_NAME}[gene] AND single_gene [PROP] AND homo sapiens [ORGN] AND var single nucleotide [FILT]" |
-        efetch -format variationid | xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+        xtract -input ~{GENE_NAME}.xml -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
             -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name |
         sort -k2  -k3 -k4 > ~{GENE_NAME}_traitmapping.txt
+
+        rm ~{GENE_NAME}.xml
 
 
 
@@ -150,7 +150,6 @@ task merge_clinvar_variants {
         File basiccv  
         File traitmap
         File traitset  
-        String GENE_NAME
 
     }
 
