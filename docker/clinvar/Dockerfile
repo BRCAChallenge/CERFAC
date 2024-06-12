@@ -59,4 +59,3 @@ RUN pip3 install pandas
 
 WORKDIR /home
 ADD cv_merge_script.py /home
-
