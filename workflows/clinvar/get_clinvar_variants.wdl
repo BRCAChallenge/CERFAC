@@ -133,7 +133,7 @@ task get_clinvar_variants {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "docker.io/allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
+        docker: "allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
         preemptible: 1
     }
 }
@@ -170,7 +170,7 @@ task merge_clinvar_variants {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "docker.io/allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
+        docker: "allisoncheney/cerfac_terra@sha256:ea88241f4bf4b4e1c8a06a8dc679c9daa32a4dfe5a24ee577cd48d1153291717"
         preemptible: 1
     }
 }
