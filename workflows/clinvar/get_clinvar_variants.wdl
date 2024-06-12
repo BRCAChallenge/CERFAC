@@ -56,7 +56,7 @@ task get_clinvar_variants {
         String GENE_NAME
         Int memSizeGB = 4
         Int threadCount = 1
-        Int diskSizeGB = 5*round(size(input_vcf, "GB")) + 20
+        Int diskSizeGB = 25
     }
 
     command <<<
