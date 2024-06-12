@@ -95,6 +95,10 @@ task extract_clinvar_variants {
     input {
         String GENE_NAME
         File basicxml  
+        Int memSizeGB = 4
+        Int threadCount = 1
+        Int diskSizeGB = 25
+
     }
 
     command <<<
