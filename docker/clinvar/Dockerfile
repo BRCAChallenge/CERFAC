@@ -1,12 +1,14 @@
-FROM ubuntu:20.04
+FROM ncbi/edirect:latest
 MAINTAINER archeney@ucsc.edu
 
+USER root
 # Prevent dpkg from trying to ask any questions, ever
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    build-essential \
     curl \
     wget \
     gcc \
@@ -22,14 +24,9 @@ RUN apt-get update && \
     libbz2-dev \
     liblzma-dev \
     autoconf \
-    build-essential \
     pkg-config \
     apt-transport-https software-properties-common dirmngr gpg-agent \
     && rm -rf /var/lib/apt/lists/*
-
-RUN yes yes | sh -c "$(curl -fsSL https://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh)" \
-    && echo "export PATH=/home/edirect:\${PATH}" >> ${HOME}/.bashrc \
-    && echo "export PATH=${HOME}/edirect:${PATH}" 
 
 
 # python packages
@@ -41,3 +38,4 @@ RUN pip3 install pandas
 
 WORKDIR /home
 ADD cv_merge_script.py /home
+
