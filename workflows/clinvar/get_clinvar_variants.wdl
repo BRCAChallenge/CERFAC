@@ -79,7 +79,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 1
         preemptible: 1
     }
 }
@@ -90,9 +90,9 @@ task extract_clinvar_variants_basic {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 6
+        Int memSizeGB = 15
         Int threadCount = 1
-        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 15
 
     }
 
@@ -122,9 +122,8 @@ task extract_clinvar_variants_basic {
                 Classification/ReviewStatus Classification/SomaticClinicalImpact @ClinicalImpactAssertionType @ClinicalImpactClinicalSignificance @DrugForTherapeuticAssertion \
                 Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment ClinVarAccession@OrganizationCategory Classification/StudyDescription ClinicalAssertion@ID \
                     -block ObservedInList -def "NA" -first Method/Description Method/MethodType Sample/CellLine \
-                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute > basicintmd.txt
-        
-        sed "s/&gt;/>/g" basicintmd.txt | 
+                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute |
+        sed "s/&gt;/>/g" |
         sed "s/&lt;/</g" | 
         sed "s/â€™/'/g" | 
         sed "s/â€˜/'/g" | 
@@ -183,7 +182,7 @@ task extract_clinvar_variants_traitset {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 4
+        maxRetries: 1
     }
 }
 
@@ -214,7 +213,7 @@ task extract_clinvar_variants_traitmap {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 4
+        maxRetries: 1
     }
 }
 
