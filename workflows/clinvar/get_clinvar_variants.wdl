@@ -20,16 +20,26 @@ workflow annotate_functional_variants {
     call get_clinvar_variants_file{
         input: GENE_NAME=GENE_NAME
     }
-    call extract_clinvar_variants{
+    call extract_clinvar_variants_basic{
+        input: 
+            GENE_NAME=GENE_NAME,
+            basicxml=get_clinvar_variants_file.basicxml
+    }
+    call extract_clinvar_variants_traitset{
+        input: 
+            GENE_NAME=GENE_NAME,
+            basicxml=get_clinvar_variants_file.basicxml
+    }
+    call extract_clinvar_variants_traitmap{
         input: 
             GENE_NAME=GENE_NAME,
             basicxml=get_clinvar_variants_file.basicxml
     }
     call merge_clinvar_variants{
         input: 
-            basiccv=extract_clinvar_variants.basiccv, 
-            traitset=extract_clinvar_variants.traitset, 
-            traitmap=extract_clinvar_variants.traitmap
+            basiccv=extract_clinvar_variants_basic.basiccv, 
+            traitset=extract_clinvar_variants_traitset.traitset, 
+            traitmap=extract_clinvar_variants_traitmap.traitmap
     }
 
     output{
@@ -76,21 +86,20 @@ task get_clinvar_variants_file {
 
 
 
-task extract_clinvar_variants {
+task extract_clinvar_variants_basic {
     input {
         String GENE_NAME
         File basicxml  
         Int memSizeGB = 6
         Int threadCount = 1
-        Int diskSizeGB = 25
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
 
     }
 
     command <<<
         set -eux -o pipefail
-        BASICXML=~{basicxml}
 
-        xtract -input $BASICXML -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+        xtract -input ~{basicxml} -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
              -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
@@ -121,7 +130,37 @@ task extract_clinvar_variants {
         sed "s/â€˜/'/g" | 
         sed "s/&amp;/&/g" > ~{GENE_NAME}_basic_res.txt
 
-        xtract -input $BASICXML  -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+
+    >>>
+
+    output {
+        File basiccv  = "~{GENE_NAME}_basic_res.txt"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: "allisoncheney/cerfac_terra:clinvar"
+        maxRetries: 4
+    }
+}
+
+
+task extract_clinvar_variants_traitset {
+    input {
+        String GENE_NAME
+        File basicxml  
+        Int memSizeGB = 6
+        Int threadCount = 1
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
+
+    }
+
+    command <<<
+        set -eux -o pipefail
+
+        xtract -input ~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
                 -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
                     -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
@@ -132,17 +171,41 @@ task extract_clinvar_variants {
                 -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
                     -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
 
-        xtract -input $BASICXML -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
-            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
-
-
-
 
     >>>
 
     output {
-        File basiccv  = "~{GENE_NAME}_basic_res.txt"
         File traitset  = "~{GENE_NAME}_traitset.txt"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: "allisoncheney/cerfac_terra:clinvar"
+        maxRetries: 4
+    }
+}
+
+task extract_clinvar_variants_traitmap {
+    input {
+        String GENE_NAME
+        File basicxml  
+        Int memSizeGB = 6
+        Int threadCount = 1
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
+
+    }
+
+    command <<<
+        set -eux -o pipefail
+
+        xtract -input~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
+
+    >>>
+
+    output {
         File traitmap  = "~{GENE_NAME}_traitmapping.txt"
     }
 
@@ -156,16 +219,14 @@ task extract_clinvar_variants {
 }
 
 
-
-
 task merge_clinvar_variants {
     input {
         Int memSizeGB = 6
         Int threadCount = 1
         File basiccv  
-        Int diskSizeGB = 5*round(size(basiccv, "GB")) + 20
         File traitmap
-        File traitset  
+        File traitset
+        Int diskSizeGB = 5*round(size(basiccv, "GB") + size(traitmap, 'GB') + size(traitset, 'GB')) + 2
 
     }
 
