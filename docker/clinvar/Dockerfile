@@ -56,6 +56,6 @@ RUN pip3 install pandas
 # add script
 #WORKDIR /opt/scripts
 #ADD cv_merge_script.py /opt/scripts
-
+#ADD problematic_vcv.xml /home
 WORKDIR /home
 ADD cv_merge_script.py /home

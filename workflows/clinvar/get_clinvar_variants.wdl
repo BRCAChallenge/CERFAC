@@ -88,8 +88,9 @@ task extract_clinvar_variants {
 
     command <<<
         set -eux -o pipefail
+        BASICXML=~{basicxml}
 
-        xtract -input ~{basicxml} -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+        xtract -input $BASICXML -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
              -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
@@ -120,21 +121,19 @@ task extract_clinvar_variants {
         sed "s/â€˜/'/g" | 
         sed "s/&amp;/&/g" > ~{GENE_NAME}_basic_res.txt
 
-        xtract -input ~{basicxml}  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
+        xtract -input $BASICXML  -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
-                -block TraitSet -deq "\n" -def "NA"   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
-                    -subset Trait -deq "\n" -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" \
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
+                    -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
             -group SomaticClinicalImpact/ConditionList \
-                -block TraitSet -deq "\n" -def "NA"  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq "\n" -def "NA" -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE"\
+                -block TraitSet -deq '\n' -def 'NA'  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
+                    -subset Trait -deq '\n' -def 'NA' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'\
             -group OncogenicityClassification/ConditionList \
-                -block TraitSet -deq "\n" -def "NA"   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE" > traitsetintmd.txt 
-        sort -k1 -k2  -k3 traitsetintmd.txt > ~{GENE_NAME}_traitset.txt
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
+                    -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
 
-        xtract -input ~{basicxml}  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
-            -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > traitmapintmd.txt
-        sort -k2  -k3 -k4 traitmapintmd.txt > ~{GENE_NAME}_traitmapping.txt
+        xtract -input $BASICXML -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
 
 
 
