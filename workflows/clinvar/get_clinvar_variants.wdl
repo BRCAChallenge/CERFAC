@@ -42,7 +42,7 @@ workflow annotate_functional_variants {
 task get_clinvar_variants_file {
     input {
         String GENE_NAME
-        Int memSizeGB = 4
+        Int memSizeGB = 6
         Int threadCount = 1
         Int diskSizeGB = 25
     }
@@ -69,6 +69,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
+        maxRetries: 3
         preemptible: 1
     }
 }
@@ -79,7 +80,7 @@ task extract_clinvar_variants {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 4
+        Int memSizeGB = 6
         Int threadCount = 1
         Int diskSizeGB = 25
 
@@ -151,7 +152,7 @@ task extract_clinvar_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        preemptible: 1
+        maxRetries: 4
     }
 }
 
@@ -160,7 +161,7 @@ task extract_clinvar_variants {
 
 task merge_clinvar_variants {
     input {
-        Int memSizeGB = 4
+        Int memSizeGB = 6
         Int threadCount = 1
         File basiccv  
         Int diskSizeGB = 5*round(size(basiccv, "GB")) + 20
@@ -186,6 +187,6 @@ task merge_clinvar_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        preemptible: 1
+        maxRetries: 4
     }
 }
