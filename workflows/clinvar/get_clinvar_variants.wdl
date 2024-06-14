@@ -111,8 +111,9 @@ task extract_clinvar_variants {
                 Classification/ReviewStatus Classification/SomaticClinicalImpact @ClinicalImpactAssertionType @ClinicalImpactClinicalSignificance @DrugForTherapeuticAssertion \
                 Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment ClinVarAccession@OrganizationCategory Classification/StudyDescription ClinicalAssertion@ID \
                     -block ObservedInList -def "NA" -first Method/Description Method/MethodType Sample/CellLine \
-                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute |
-        sed "s/&gt;/>/g" | 
+                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute > basicintmd.txt
+        
+        sed "s/&gt;/>/g" basicintmd.txt | 
         sed "s/&lt;/</g" | 
         sed "s/â€™/'/g" | 
         sed "s/â€˜/'/g" | 
@@ -127,12 +128,12 @@ task extract_clinvar_variants {
                     -subset Trait -deq "\n" -def "NA" -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE"\
             -group OncogenicityClassification/ConditionList \
                 -block TraitSet -deq "\n" -def "NA"   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE" |
-        sort -k1 -k2  -k3 > ~{GENE_NAME}_traitset.txt
+                    -subset Trait -deq "\n" -def "NA"  -element  "&KEYVCV"  "&TSID" Trait@ID "&CONTRIB" "&EVIDEN" "&TTYPE" > traitsetintmd.txt 
+        sort -k1 -k2  -k3 traitsetintmd.txt > ~{GENE_NAME}_traitset.txt
 
         xtract -input ~{basicxml}  -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession \
-            -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name |
-        sort -k2  -k3 -k4 > ~{GENE_NAME}_traitmapping.txt
+            -group TraitMapping -deq "\n" -def "None" -lbl "traitmapping" -element "&KEYVCV" @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > traitmapintmd.txt
+        sort -k2  -k3 -k4 traitmapintmd.txt > ~{GENE_NAME}_traitmapping.txt
 
 
 
