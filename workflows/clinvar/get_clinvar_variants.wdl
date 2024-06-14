@@ -83,6 +83,9 @@ task get_clinvar_variants_file {
         preemptible: 1
     }
 }
+
+
+
 task extract_clinvar_variants_traitmap {
     input {
         String GENE_NAME
@@ -96,8 +99,8 @@ task extract_clinvar_variants_traitmap {
     command <<<
         set -eux -o pipefail
 
-        xtract -input ~{basicxml} \
-            -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+        cat  ~{basicxml} |
+        xtract -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
                 -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
 
     >>>
@@ -129,7 +132,8 @@ task extract_clinvar_variants_traitset {
     command <<<
         set -eux -o pipefail
 
-        xtract -input ~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+        cat  ~{basicxml} |
+        xtract -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
                 -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
                     -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
@@ -172,7 +176,8 @@ task extract_clinvar_variants_basic {
     command <<<
         set -eux -o pipefail
 
-        xtract -input ~{basicxml} -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+        cat  ~{basicxml} |
+        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
              -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
