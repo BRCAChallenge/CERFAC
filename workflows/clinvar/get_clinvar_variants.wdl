@@ -20,7 +20,7 @@ workflow annotate_functional_variants {
     call get_clinvar_variants_file{
         input: GENE_NAME=GENE_NAME
     }
-    call extract_clinvar_variants_basic{
+    call extract_clinvar_variants_traitmap{
         input: 
             GENE_NAME=GENE_NAME,
             basicxml=get_clinvar_variants_file.basicxml
@@ -30,7 +30,7 @@ workflow annotate_functional_variants {
             GENE_NAME=GENE_NAME,
             basicxml=get_clinvar_variants_file.basicxml
     }
-    call extract_clinvar_variants_traitmap{
+    call extract_clinvar_variants_basic{
         input: 
             GENE_NAME=GENE_NAME,
             basicxml=get_clinvar_variants_file.basicxml
@@ -83,6 +83,78 @@ task get_clinvar_variants_file {
         preemptible: 1
     }
 }
+task extract_clinvar_variants_traitmap {
+    input {
+        String GENE_NAME
+        File basicxml  
+        Int memSizeGB = 6
+        Int threadCount = 1
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
+
+    }
+
+    command <<<
+        set -eux -o pipefail
+
+        xtract -input~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
+
+    >>>
+
+    output {
+        File traitmap  = "~{GENE_NAME}_traitmapping.txt"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: "allisoncheney/cerfac_terra:clinvar"
+        maxRetries: 1
+    }
+}
+
+
+task extract_clinvar_variants_traitset {
+    input {
+        String GENE_NAME
+        File basicxml  
+        Int memSizeGB = 6
+        Int threadCount = 1
+        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
+
+    }
+
+    command <<<
+        set -eux -o pipefail
+
+        xtract -input ~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+            -group GermlineClassification/ConditionList \
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
+                    -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
+            -group SomaticClinicalImpact/ConditionList \
+                -block TraitSet -deq '\n' -def 'NA'  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
+                    -subset Trait -deq '\n' -def 'NA' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'\
+            -group OncogenicityClassification/ConditionList \
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
+                    -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
+
+
+    >>>
+
+    output {
+        File traitset  = "~{GENE_NAME}_traitset.txt"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
+        docker: "allisoncheney/cerfac_terra:clinvar"
+        maxRetries: 1
+    }
+}
+
 
 
 
@@ -146,76 +218,6 @@ task extract_clinvar_variants_basic {
 }
 
 
-task extract_clinvar_variants_traitset {
-    input {
-        String GENE_NAME
-        File basicxml  
-        Int memSizeGB = 6
-        Int threadCount = 1
-        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
-
-    }
-
-    command <<<
-        set -eux -o pipefail
-
-        xtract -input ~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
-            -group GermlineClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
-                    -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
-            -group SomaticClinicalImpact/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'\
-            -group OncogenicityClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
-
-
-    >>>
-
-    output {
-        File traitset  = "~{GENE_NAME}_traitset.txt"
-    }
-
-    runtime {
-        memory: memSizeGB + " GB"
-        cpu: threadCount
-        disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 1
-    }
-}
-
-task extract_clinvar_variants_traitmap {
-    input {
-        String GENE_NAME
-        File basicxml  
-        Int memSizeGB = 6
-        Int threadCount = 1
-        Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
-
-    }
-
-    command <<<
-        set -eux -o pipefail
-
-        xtract -input~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
-            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
-
-    >>>
-
-    output {
-        File traitmap  = "~{GENE_NAME}_traitmapping.txt"
-    }
-
-    runtime {
-        memory: memSizeGB + " GB"
-        cpu: threadCount
-        disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 1
-    }
-}
 
 
 task merge_clinvar_variants {
