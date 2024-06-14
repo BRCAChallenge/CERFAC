@@ -52,9 +52,9 @@ workflow annotate_functional_variants {
 task get_clinvar_variants_file {
     input {
         String GENE_NAME
-        Int memSizeGB = 6
+        Int memSizeGB = 10
         Int threadCount = 1
-        Int diskSizeGB = 25
+        Int diskSizeGB = 30
     }
 
     command <<<
@@ -79,7 +79,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 1
+        maxRetries: 5
         preemptible: 1
     }
 }
@@ -87,7 +87,7 @@ task extract_clinvar_variants_traitmap {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 6
+        Int memSizeGB = 10
         Int threadCount = 1
         Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
 
@@ -96,8 +96,9 @@ task extract_clinvar_variants_traitmap {
     command <<<
         set -eux -o pipefail
 
-        xtract -input~{basicxml} -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
-            -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
+        xtract -input ~{basicxml} \
+            -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
+                -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
 
     >>>
 
@@ -110,7 +111,7 @@ task extract_clinvar_variants_traitmap {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 1
+        maxRetries: 4
     }
 }
 
@@ -119,7 +120,7 @@ task extract_clinvar_variants_traitset {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 6
+        Int memSizeGB = 10
         Int threadCount = 1
         Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
 
@@ -151,7 +152,7 @@ task extract_clinvar_variants_traitset {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 1
+        maxRetries: 5
     }
 }
 
@@ -213,7 +214,7 @@ task extract_clinvar_variants_basic {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 4
+        maxRetries: 5
     }
 }
 
