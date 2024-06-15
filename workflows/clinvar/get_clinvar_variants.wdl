@@ -10,10 +10,12 @@ workflow annotate_functional_variants {
 
     parameter_meta {
         GENE_NAME: "Name of relevant gene"
+        SCRIPT="cv_merge_script.py"
 
     }
     input {
-        String GENE_NAME    
+        String GENE_NAME 
+        File SCRIPT
     }
     #The order in which the workflow block and task definitions are arranged in the script does not matter. 
     #Nor does the order of the call statements matter, as we'll see further on.
@@ -37,6 +39,7 @@ workflow annotate_functional_variants {
     }
     call merge_clinvar_variants{
         input: 
+            SCRIPT=SCRIPT,
             basiccv=extract_clinvar_variants_basic.basiccv, 
             traitset=extract_clinvar_variants_traitset.traitset, 
             traitmap=extract_clinvar_variants_traitmap.traitmap
@@ -230,6 +233,7 @@ task merge_clinvar_variants {
     input {
         Int memSizeGB = 6
         Int threadCount = 1
+        File SCRIPT
         File basiccv  
         File traitmap
         File traitset
@@ -240,7 +244,7 @@ task merge_clinvar_variants {
     command <<<
         set -eux -o pipefail
 
-        python3 cv_merge_script.py -f ~{basiccv} -m ~{traitmap} -s ~{traitset}  -o  clinvar_variants.csv
+        python3 ~{SCRIPT} -f ~{basiccv} -m ~{traitmap} -s ~{traitset}  -o  clinvar_variants.csv
 
 
     >>>
