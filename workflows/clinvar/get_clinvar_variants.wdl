@@ -10,7 +10,7 @@ workflow annotate_functional_variants {
 
     parameter_meta {
         GENE_NAME: "Name of relevant gene"
-        SCRIPT="cv_merge_script.py"
+        SCRIPT:"cv_merge_script.py"
 
     }
     input {
@@ -57,7 +57,7 @@ task get_clinvar_variants_file {
         String GENE_NAME
         Int memSizeGB = 10
         Int threadCount = 1
-        Int diskSizeGB = 30
+        Int diskSizeGB = 10
     }
 
     command <<<
@@ -82,7 +82,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 5
+        maxRetries: 3
         preemptible: 1
     }
 }
@@ -117,7 +117,8 @@ task extract_clinvar_variants_traitmap {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 4
+        maxRetries: 3
+        preemptible: 1
     }
 }
 
@@ -159,7 +160,8 @@ task extract_clinvar_variants_traitset {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 5
+        maxRetries: 3
+        preemptible: 1
     }
 }
 
@@ -170,7 +172,7 @@ task extract_clinvar_variants_basic {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 15
+        Int memSizeGB = 10
         Int threadCount = 1
         Int diskSizeGB = 5*round(size(basicxml, "GB")) + 15
 
@@ -222,7 +224,8 @@ task extract_clinvar_variants_basic {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 5
+        maxRetries: 3
+        preemptible: 1
     }
 }
 
@@ -258,6 +261,7 @@ task merge_clinvar_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 4
+        maxRetries: 3
+        preemptible: 1
     }
 }
