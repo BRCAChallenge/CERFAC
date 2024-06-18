@@ -20,6 +20,8 @@ parser.add_argument('-o', default='gnomad_variants_MANE.csv',help='output CSV wi
 
 args = parser.parse_args()
 
+start_pos =hl.int32(args.b)
+stop_pos =hl.int32(args.e)
 
 from gnomad.resources.grch38.gnomad import public_release
 v4exomes = public_release("exomes").ht()
@@ -338,8 +340,8 @@ v4genomes_varid_sm = v4genomes_varid_sm.annotate(ref_genome=get_ref_genome(v4gen
 chr_string = "chr" + args.c
 filtered_v4exomes = v4exomes_varid_sm.filter(v4exomes_varid_sm.locus.contig == chr_string )
 filtered_v4genomes = v4genomes_varid_sm.filter(v4genomes_varid_sm.locus.contig == chr_string )
-exomes_select = hl.filter_intervals(filtered_v4exomes, [hl.locus_interval(chr_string, args.b,args.e, reference_genome='GRCh38')])
-genomes_select = hl.filter_intervals(filtered_v4genomes, [hl.locus_interval(chr_string, args.b,args.e, reference_genome='GRCh38')])
+exomes_select = hl.filter_intervals(filtered_v4exomes, [hl.locus_interval(chr_string, start_pos, stop_pos, reference_genome='GRCh38')])
+genomes_select = hl.filter_intervals(filtered_v4genomes, [hl.locus_interval(chr_string, start_pos, stop_pos, reference_genome='GRCh38')])
 
 joined_gnomad_inner = genomes_select.join(exomes_select, how='inner')
 joined_gnomad_inner = joined_gnomad_inner.annotate(exorgen="both")
