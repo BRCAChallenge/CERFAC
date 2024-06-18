@@ -58,6 +58,9 @@ v4exomes_varid_sm = v4exomes.select(
                                     txpt_distance = v4exomes.vep.transcript_consequences.distance,
                                     txpt_domains = v4exomes.vep.transcript_consequences.domains,
                                     txpt_exon = v4exomes.vep.transcript_consequences.exon,
+                                    txpt_hgvsc = v4exomes.vep.transcript_consequences.hgvsc,
+                                    txpt_hgvsp = v4exomes.vep.transcript_consequences.hgvsp,
+                                    txpt_hgvs_offset = v4exomes.vep.transcript_consequences.hgvs_offset,
                                     #txpt_gene_id = v4exomes.vep.transcript_consequences.gene_id,
                                     txpt_gene_pheno = v4exomes.vep.transcript_consequences.gene_pheno,
                                     txpt_gene_symbol = v4exomes.vep.transcript_consequences.gene_symbol,
@@ -109,6 +112,9 @@ v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
                                     txpt_distance = v4genomes.vep.transcript_consequences.distance,
                                     txpt_domains = v4genomes.vep.transcript_consequences.domains,
                                     txpt_exon = v4genomes.vep.transcript_consequences.exon,
+                                    txpt_hgvsc = v4genomes.vep.transcript_consequences.hgvsc,
+                                    txpt_hgvsp = v4genomes.vep.transcript_consequences.hgvsp,
+                                    txpt_hgvs_offset = v4genomes.vep.transcript_consequences.hgvs_offset,
                                     #txpt_gene_id = v4genomes.vep.transcript_consequences.gene_id,
                                     txpt_gene_pheno = v4genomes.vep.transcript_consequences.gene_pheno,
                                     txpt_gene_symbol = v4genomes.vep.transcript_consequences.gene_symbol,
@@ -144,7 +150,7 @@ v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_eas=v4exomes_
 
 v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_nfe=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['nfe_adj']])
 
-v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_rmi=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['rmi_adj']])
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_rmi=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['remaining_adj']])
 
 v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_sas=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['sas_adj']])
 
@@ -397,6 +403,7 @@ gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 badcols = [
        'txpt_amino_acids', 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
        'txpt_consequence_terms', 'txpt_distance', 'txpt_domains', 'txpt_exon',
+       'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset',
        'txpt_gene_pheno', 'txpt_gene_symbol', 'txpt_impact', 'txpt_intron',
        'txpt_lof', 'txpt_lof_filter', 'txpt_lof_flags', 'txpt_lof_info',
        'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
