@@ -33,6 +33,8 @@ v4genomes.count()
 v4exomes_varid_sm = v4exomes.select( 
                                     v4exomes.freq,          #must be broken down further
                                     #v4exomes.joint_freq, 
+                                    v4exomes.faf,           #must be broken down further
+                                    #v4exomes.joint_faf,
                                     #v4exomes.vep.id,
                                     v4exomes.vep.allele_string, 
                                     v4exomes.vep.start, 
@@ -41,8 +43,15 @@ v4exomes_varid_sm = v4exomes.select(
                                     v4exomes.vep.seq_region_name, 
                                     v4exomes.vep.variant_class,
                                     v4exomes.allele_info.allele_type,                                         
+                                    v4exomes.vep.most_severe_consequence,
                                     v4exomes.in_silico_predictors.spliceai_ds_max,
                                     variant_type_exomes =   v4exomes.allele_info.variant_type,
+                                    joint_grpmax_exomes = v4exomes.joint_grpmax,
+                                    joint_fafmax_exomes = v4exomes.joint_fafmax,
+                                    fafmax_gnomad_exomes = v4exomes.fafmax.gnomad,
+                                    fafmax_non_ukb_exomes = v4exomes.fafmax.non_ukb,
+                                    grpmax_gnomad_exomes = v4exomes.grpmax.gnomad,
+                                    grpmax_non_ukb_exomes= v4exomes.grpmax.non_ukb,
                                     n_alt_alleles_exomes =   v4exomes.allele_info.n_alt_alleles,
                                     #txpt_allele_num = v4exomes.vep.transcript_consequences.allele_num,
                                     txpt_biotype = v4exomes.vep.transcript_consequences.biotype,
@@ -80,6 +89,7 @@ v4exomes_varid_sm = v4exomes.select(
 #gnomad genome data
 v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
                                       v4genomes.freq, 
+                                        v4genomes.faf,
 
                                                                         
                                     #v4genomes.vep.id,
@@ -92,9 +102,14 @@ v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
                                     v4genomes.allele_info.variant_type,
                                     v4genomes.allele_info.allele_type,                                         
                                  
+                                    v4genomes.vep.most_severe_consequence,
                                     v4genomes.in_silico_predictors.spliceai_ds_max,
                                     variant_type_genomes =   v4genomes.allele_info.variant_type,
                                     n_alt_alleles_genomes=   v4genomes.allele_info.n_alt_alleles,
+                                    fafmax_genomes = v4genomes.fafmax,
+                                   grpmax_genomes = v4genomes.grpmax,
+                                    joint_grpmax_genomes = v4genomes.joint_grpmax,
+                                    joint_fafmax_genomes = v4genomes.joint_fafmax,
                                     #txpt_allele_num = v4genomes.vep.transcript_consequences.allele_num,
                                     txpt_biotype = v4genomes.vep.transcript_consequences.biotype,
                                     txpt_consequence_terms = v4genomes.vep.transcript_consequences.consequence_terms,
@@ -132,6 +147,24 @@ v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
 #Use the 'freq_index_dict' global annotation to retrieve frequency information for a specific group of samples from the 'freq' array. 
 #This global annotation is a dictionary keyed by sample grouping combinations whose values are the combination's index in the 'freq' array.
 
+#freq, non ukb
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_afr=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_afr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_amr=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_amr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_eas=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_eas_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_nfe=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_nfe_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_rmi=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_remaining_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_sas=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_sas_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_mid=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_mid_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_fin=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_fin_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_nonukb_adj_asj=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['non_ukb_asj_adj']])
 
 #freq, with ukb
 v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_afr=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['afr_adj']])
@@ -153,6 +186,28 @@ v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_fin=v4exomes_
 v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_asj=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['asj_adj']])
 
 
+#faf, nonukb
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_nonukb_adj_afr=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['non_ukb_afr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_nonukb_adj_amr=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['non_ukb_amr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_nonukb_adj_eas=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['non_ukb_eas_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_nonukb_adj_nfe=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['non_ukb_nfe_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_nonukb_adj_sas=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['non_ukb_sas_adj']])
+#faf with ukb
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_main_adj_afr=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['afr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_main_adj_amr=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['amr_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_main_adj_eas=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['eas_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_main_adj_nfe=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['nfe_adj']])
+
+v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_faf_main_adj_sas=v4exomes_varid_sm.faf[v4exomes_varid_sm.faf_index_dict['sas_adj']])
+
+
 
 #freq, genomes, with ukb
 v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_afr=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['afr_adj']])
@@ -172,6 +227,16 @@ v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_mid=v4genomes_v
 v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_fin=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['fin_adj']])
 
 v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_asj=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['asj_adj']])
+#faf, genomes, with ukb
+v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_faf_adj_afr=v4genomes_varid_sm.faf[v4genomes_varid_sm.faf_index_dict['afr_adj']])
+
+v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_faf_adj_amr=v4genomes_varid_sm.faf[v4genomes_varid_sm.faf_index_dict['amr_adj']])
+
+v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_faf_adj_eas=v4genomes_varid_sm.faf[v4genomes_varid_sm.faf_index_dict['eas_adj']])
+
+v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_faf_adj_nfe=v4genomes_varid_sm.faf[v4genomes_varid_sm.faf_index_dict['nfe_adj']])
+
+v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_faf_adj_sas=v4genomes_varid_sm.faf[v4genomes_varid_sm.faf_index_dict['sas_adj']])
 
 
 #The exomes and genomes databases do not contain gnomAD variant IDs. However, we can write a function that creates them from the locus and alleles data.
@@ -336,8 +401,11 @@ v4genomes_varid_sm = v4genomes_varid_sm.annotate(ref_genome=get_ref_genome(v4gen
 
 
 chr_string = "chr" + args.c
+#filtered_v4exomes = v4exomes_varid_sm.filter(v4exomes_varid_sm.locus.contig == "chr17" )
 filtered_v4exomes = v4exomes_varid_sm.filter(v4exomes_varid_sm.locus.contig == chr_string )
 filtered_v4genomes = v4genomes_varid_sm.filter(v4genomes_varid_sm.locus.contig == chr_string )
+#
+#exomes_select = hl.filter_intervals(filtered_v4exomes, [hl.locus_interval("chr17", 43044295,43170327, reference_genome='GRCh38')])
 exomes_select = hl.filter_intervals(filtered_v4exomes, [hl.locus_interval(chr_string, args.b,args.e, reference_genome='GRCh38')])
 genomes_select = hl.filter_intervals(filtered_v4genomes, [hl.locus_interval(chr_string, args.b,args.e, reference_genome='GRCh38')])
 
@@ -353,9 +421,9 @@ exomes_select_aj = exomes_select.anti_join(genomes_select)
 exomes_select_aj = exomes_select_aj.annotate(exorgen="exomes")
 
 
-joined_gnomad_inner = joined_gnomad_inner.drop('freq')
-exomes_select_aj = exomes_select_aj.drop('freq')
-genomes_select_aj = genomes_select_aj.drop('freq')
+joined_gnomad_inner = joined_gnomad_inner.drop('freq', 'faf')
+exomes_select_aj = exomes_select_aj.drop('freq', 'faf')
+genomes_select_aj = genomes_select_aj.drop('freq', 'faf')
 
 
 #flattening allows for union later
@@ -401,7 +469,7 @@ badcols = [
        'txpt_protein_start', 'txpt_transcript_id', 'txpt_uniprot_isoform']
 gnomad_union_df = gnomad_union_df.explode(badcols)
 gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_canonical == 1]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == args.g]
+gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == args.c]
 gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 #consequence terms  needs explanding again!
 badcols = ['txpt_consequence_terms']
