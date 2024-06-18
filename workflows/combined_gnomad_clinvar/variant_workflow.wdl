@@ -10,9 +10,9 @@ workflow annotate_functional_variants {
 
     parameter_meta {
         GENE_NAME: "Name of relevant gene"
-        GNOMAD_SCRIPT:"gnomad_variants_script.py file used for extracting variants from gnomad"
-        MERGE_ALL_SCRIPT:"merge_all_variants.py"
-        CVSCRIPT:"cv_merge_script.py"
+        GNOMAD_SCRIPT: "gnomad_variants_script.py file used for extracting variants from gnomad"
+        MERGE_ALL_SCRIPT: "merge_all_variants.py"
+        CVSCRIPT: "cv_merge_script.py"
     }
     input {
         String GENE_NAME
@@ -63,14 +63,14 @@ workflow annotate_functional_variants {
     call merge_variants{
         input:
             MERGE_ALL_SCRIPT=MERGE_ALL_SCRIPT,
+            GENE_NAME=GENE_NAME,
             gnomadvar=get_gnomad_variants.gnomadvar,
             clinvar_var=merge_clinvar_variants.clinvar_var
     }
 
 
     output{
-        File combined_var = merge_variants.combined_var,
-        File gene_results = extract_gene_loc.gene_results
+        File combined_var = merge_variants.combined_var
     }
 }
 
