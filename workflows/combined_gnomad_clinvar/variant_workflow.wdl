@@ -97,11 +97,9 @@ task extract_gene_loc {
 
         awk -F '\t' 'NR == 1 {print $1}' gene_positions.txt | tee ASSEMBLY
 
-        echo "getting chromsome of $GENE_NAME"
         awk -F '\t' 'NR == 1 {print $2}' gene_positions.txt | tee CHR_ID
         
         if grep -q -m 1 "GRCh38" gene_positions.txt; then
-            ASSEMBLY='GRCh38' #
             grep 'GRCh38' gene_positions.txt | awk -F '\t' '{print $3}' | tee GENE_START_LOCUS
             grep 'GRCh38' gene_positions.txt | awk -F '\t' '{print $4}' | tee GENE_END_LOCUS
         else 
@@ -119,6 +117,8 @@ task extract_gene_loc {
         }
     runtime {
         memory: memSizeGB + " GB"
+        cpu: threadCount
+        disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
         preemptible: 1
     }
