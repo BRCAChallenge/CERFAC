@@ -46,8 +46,7 @@ workflow annotate_functional_variants {
     }
 
     output{
-        File clinvar_var = merge_clinvar_variants.clinvar_var,
-        File gene_positions = get_clinvar_variants_file.gene_positions
+        File clinvar_var = merge_clinvar_variants.clinvar_var
     }
 
 }
