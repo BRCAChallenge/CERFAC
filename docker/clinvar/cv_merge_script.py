@@ -13,16 +13,14 @@ args = parser.parse_args()
 
 Gene_CV_basic = pd.read_csv(args.f, delimiter="\t", 
                             names =["row_type", "VCV_ID", "ClinVar_variant_ID", "variant_type","submissions", "version", 
-                                "assembly", "Chr", "start", "stop", "ref", "alt","variant_length", "variant_effect","hgvsc",
+                                "assembly", "Chr", "start", "stop", "ref", "alt","variant_length", "variant_effect","hgvsc", 
                                 "date_created", "date_updated",  "date_submitted", 
                                 "review_status","germline_classification",
                                 "onco_review_status","oncogenicity_classification",
-                                "som_review_status","somatic_classification","somatic_type", "somatic_significance", "drug_associated",
+                                "som_review_status","somatic_classification",
                                 "comment",
-                                "functional_category", "FA_comment", "source_type","study_desc",
-                                "CA_ID",
-                                "method", "method_category",
-                               "cell_line", "functional_result"] , header=None, keep_default_na=False)
+                                "functional_category", "FA_comment",
+                                "CA_ID", "functional_result"] , header=None, keep_default_na=False)
 
 trait_set = pd.read_csv(args.s, delimiter="\t", 
                        names = ["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID","Evidence" ] )
