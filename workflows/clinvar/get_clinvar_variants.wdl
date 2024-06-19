@@ -10,12 +10,12 @@ workflow annotate_functional_variants {
 
     parameter_meta {
         GENE_NAME: "Name of relevant gene"
-        SCRIPT:"cv_merge_script.py"
+        CVSCRIPT: "cv_merge_script.py"
 
     }
     input {
         String GENE_NAME 
-        File SCRIPT
+        File CVSCRIPT
     }
     #The order in which the workflow block and task definitions are arranged in the script does not matter. 
     #Nor does the order of the call statements matter, as we'll see further on.
@@ -39,7 +39,7 @@ workflow annotate_functional_variants {
     }
     call merge_clinvar_variants{
         input: 
-            SCRIPT=SCRIPT,
+            CVSCRIPT=CVSCRIPT,
             basiccv=extract_clinvar_variants_basic.basiccv, 
             traitset=extract_clinvar_variants_traitset.traitset, 
             traitmap=extract_clinvar_variants_traitmap.traitmap
@@ -94,7 +94,7 @@ task extract_clinvar_variants_traitmap {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 10
+        Int memSizeGB = 3
         Int threadCount = 1
         Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
 
@@ -128,7 +128,7 @@ task extract_clinvar_variants_traitset {
     input {
         String GENE_NAME
         File basicxml  
-        Int memSizeGB = 10
+        Int memSizeGB = 3
         Int threadCount = 1
         Int diskSizeGB = 5*round(size(basicxml, "GB")) + 2
 
@@ -140,14 +140,17 @@ task extract_clinvar_variants_traitset {
         cat  ~{basicxml} |
         xtract -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
-                    -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification  -TSTYPE  TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element '&KEYVCV'  '&TSID' '&TSTYPE' Trait@ID Trait@Type  '&CONTRIB'  \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element   XRef@ID  \
             -group SomaticClinicalImpact/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'\
+                -block TraitSet -deq '\n' -def 'NA'   -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TSYPE TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID'  '&TSTYPE' Trait@ID Trait@Type '&CONTRIB' \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element  XRef@ID  \
             -group OncogenicityClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
+                -block TraitSet -deq '\n' -def 'NA'   -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TSYPE TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID'  '&TSTYPE' Trait@ID Trait@Type '&CONTRIB' \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element  XRef@ID    > ~{GENE_NAME}_traitset.txt
 
 
     >>>
@@ -183,15 +186,13 @@ task extract_clinvar_variants_basic {
         set -eux -o pipefail
 
         cat  ~{basicxml} |
-        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession  -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
-             -group ClassifiedRecord/SimpleAllele/GeneList/Gene/Location/SequenceLocation  -if SequenceLocation@Assembly -equals "GRCh38" -def "NA" \
-                -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop \
+        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession -KEYCHANGE "(unknown)" -KEYCONS "(unknown)" -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
                 -KEYASM SequenceLocation@Assembly -KEYCHR SequenceLocation@Chr  -KEYSTART SequenceLocation@start -KEYSTOP SequenceLocation@stop -KEYREFA SequenceLocation@referenceAlleleVCF -KEYALTA SequenceLocation@alternateAlleleVCF -KEYVLEN SequenceLocation@variantLength \
                 -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop SequenceLocation@referenceAlleleVCF SequenceLocation@alternateAlleleVCF SequenceLocation@variantLength \
             -group ClassifiedRecord/SimpleAllele/HGVSlist/HGVS -if NucleotideExpression@MANESelect -equals true \
-                -def "NA" -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type -first MolecularConsequence@Type NucleotideExpression@change   \
-            -group ClassifiedRecord/SimpleAllele/ -element "&KEYVDC"  "&KEYVDLU"  "&KEYVMRS"  \
+                -def "NA" -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type -first MolecularConsequence@Type NucleotideExpression@change \
+            -group ClassifiedRecord/SimpleAllele -element "&KEYVDC"  "&KEYVDLU"  "&KEYVMRS"  \
             -group ClassifiedRecord/Classifications -if GermlineClassification -def "NA" -element GermlineClassification/ReviewStatus GermlineClassification/Description  \
                     -else -lbl "NA\tNA" \
             -group ClassifiedRecord/Classifications -if OncogenicityClassification -def "NA" -element OncogenicityClassification/ReviewStatus OncogenicityClassification/Description  \
@@ -203,9 +204,9 @@ task extract_clinvar_variants_basic {
                 ClinicalAssertion@DateCreated ClinicalAssertion@DateLastUpdated ClinicalAssertion@SubmissionDate \
                 Classification/ReviewStatus Classification/GermlineClassification  \
                 Classification/ReviewStatus Classification/OncogenicityClassification \
-                Classification/ReviewStatus Classification/SomaticClinicalImpact @ClinicalImpactAssertionType @ClinicalImpactClinicalSignificance @DrugForTherapeuticAssertion \
-                Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment ClinVarAccession@OrganizationCategory Classification/StudyDescription ClinicalAssertion@ID \
-                    -block ObservedInList -def "NA" -first Method/Description Method/MethodType Sample/CellLine \
+                Classification/ReviewStatus Classification/SomaticClinicalImpact \
+                Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment  ClinicalAssertion@ID \
+                    -block ObservedInList -def "NA"  \
                         -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute |
         sed "s/&gt;/>/g" |
         sed "s/&lt;/</g" | 
@@ -233,11 +234,12 @@ task extract_clinvar_variants_basic {
 
 
 
+
 task merge_clinvar_variants {
     input {
-        Int memSizeGB = 6
+        Int memSizeGB = 4
         Int threadCount = 1
-        File SCRIPT
+        File CVSCRIPT
         File basiccv  
         File traitmap
         File traitset
@@ -248,7 +250,7 @@ task merge_clinvar_variants {
     command <<<
         set -eux -o pipefail
 
-        python3 ~{SCRIPT} -f ~{basiccv} -m ~{traitmap} -s ~{traitset}  -o  clinvar_variants.csv
+        python3 ~{CVSCRIPT} -f ~{basiccv} -m ~{traitmap} -s ~{traitset}  -o  clinvar_variants.csv
 
 
     >>>

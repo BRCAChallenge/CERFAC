@@ -237,14 +237,17 @@ task extract_clinvar_variants_traitset {
         cat  ~{basicxml} |
         xtract -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
             -group GermlineClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification    \
-                    -subset Trait -deq '\n' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' \
+                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification  -TSTYPE  TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element '&KEYVCV'  '&TSID' '&TSTYPE' Trait@ID Trait@Type  '&CONTRIB'  \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element   XRef@ID  \
             -group SomaticClinicalImpact/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'  -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA' -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'\
+                -block TraitSet -deq '\n' -def 'NA'   -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TSYPE TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID'  '&TSTYPE' Trait@ID Trait@Type '&CONTRIB' \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element  XRef@ID  \
             -group OncogenicityClassification/ConditionList \
-                -block TraitSet -deq '\n' -def 'NA'   -TSID TraitSet@ID  -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TTYPE TraitSet@Type \
-                    -subset Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID' Trait@ID '&CONTRIB' '&EVIDEN' '&TTYPE'  > ~{GENE_NAME}_traitset.txt
+                -block TraitSet -deq '\n' -def 'NA'   -CONTRIB TraitSet@ContributesToAggregateClassification   -EVIDEN TraitSet@LowerLevelOfEvidence -TSYPE TraitSet@Type \
+                    -section Trait -deq '\n' -def 'NA'  -element  '&KEYVCV'  '&TSID'  '&TSTYPE' Trait@ID Trait@Type '&CONTRIB' \
+                        -subset Trait/XRef -if XRef@DB -equals 'MedGen'  -element  XRef@ID    > ~{GENE_NAME}_traitset.txt
 
 
     >>>

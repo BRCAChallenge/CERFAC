@@ -23,7 +23,7 @@ Gene_CV_basic = pd.read_csv(args.f, delimiter="\t",
                                 "CA_ID", "functional_result"] , header=None, keep_default_na=False)
 
 trait_set = pd.read_csv(args.s, delimiter="\t", 
-                       names = ["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID","Evidence" ] )
+                       names = ["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID" ] )
 trait_set['TraitSet_ID'] = trait_set['TraitSet_ID'].fillna("none")
 trait_set[['TraitSet_ID' ]] = trait_set[['TraitSet_ID' ]].astype('str')
 trait_set[['Trait_ID' ]] = trait_set[['Trait_ID' ]].astype('str')
@@ -32,9 +32,9 @@ trait_set['Evidence'] = trait_set['Evidence'].fillna("none")
 trait_set['Trait_Type'] = trait_set['Trait_Type'].fillna("none")
 trait_set['TS_Type'] = trait_set['TS_Type'].fillna("none")
 trait_set=trait_set.sort_values([ "VCV_ID", "MG_ID"])
-trait_set['MG_ID'] = trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID","Evidence"]].groupby(["VCV_ID", "TraitSet_ID" ])['MG_ID'].transform(lambda x: '_'.join(x))
-trait_set['Trait_ID'] = trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID","Evidence"]].groupby(["VCV_ID", "TraitSet_ID" ])['Trait_ID'].transform(lambda x: '&'.join(x))
-trait_set =  trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID","Evidence"]].drop_duplicates()
+trait_set['MG_ID'] = trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID"]].groupby(["VCV_ID", "TraitSet_ID" ])['MG_ID'].transform(lambda x: '_'.join(x))
+trait_set['Trait_ID'] = trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID"]].groupby(["VCV_ID", "TraitSet_ID" ])['Trait_ID'].transform(lambda x: '&'.join(x))
+trait_set =  trait_set[["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID"]].drop_duplicates()
 
 
 trait_map = pd.read_csv(args.m, delimiter="\t", 
@@ -72,17 +72,9 @@ cols = ['row_type',
  'variant_type', 'variant_effect','hgvsc', 'review_status',
  'germline_classification', 'oncogenicity_classification',
  'somatic_classification',
- 'somatic_type',
- 'somatic_significance',
- 'drug_associated',
  'comment',
  'functional_category',
  'FA_comment',
- 'source_type',
- 'study_desc',
- 'method',
- 'method_category',
- 'cell_line',
  'functional_result',
  'date_created',
  'date_updated',
