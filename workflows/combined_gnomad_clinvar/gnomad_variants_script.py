@@ -385,14 +385,14 @@ gnomad_union = gnomad_union.annotate(ref_genome=get_ref_genome(gnomad_union.locu
 gnomad_union = gnomad_union.annotate(chr_id=chromosome_id(gnomad_union.locus, gnomad_union.alleles))
 
 #get start and end positions
-gnomad_union = gnomad_union.annotate(ref_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
-gnomad_union = gnomad_union.annotate(ref_end=get_end_pos_ref(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(ref_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(ref_end=get_end_pos_ref(gnomad_union.locus, gnomad_union.alleles))
 
-gnomad_union = gnomad_union.annotate(alt_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
-gnomad_union = gnomad_union.annotate(alt_end=get_end_pos_alt(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(alt_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(alt_end=get_end_pos_alt(gnomad_union.locus, gnomad_union.alleles))
 
-gnomad_union = gnomad_union.annotate(gnomad_variant_id=variant_id(gnomad_union.locus, gnomad_union.alleles))
-gnomad_union = gnomad_union.annotate(gnomad_variant_id_B=variant_id_dash(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(gnomad_variant_id=variant_id(gnomad_union.locus, gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(gnomad_variant_id_B=variant_id_dash(gnomad_union.locus, gnomad_union.alleles))
 
 gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
 gnomad_union = gnomad_union.annotate(CERFAC_variant_id=variant_idCERFAC(gnomad_union.locus, gnomad_union.alleles))
@@ -416,13 +416,24 @@ gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.starts
 badcols = ['txpt_consequence_terms']
 gnomad_union_df = gnomad_union_df.explode(badcols)
 #should probably be optional along with splice variants
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "intron_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_region_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_region_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_acceptor_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
-gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
+gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
+
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "intron_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_region_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_region_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_acceptor_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
+#gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
+
+#drop cols txpt_canonical, txpt_appris, txpt_biotype txpt_gene_pheno txpt_gene_symbol 'txpt_mane_plus_clinical', 'txpt_mane_select', seq region name, refgenome chrid
+gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
+gnomad_union_df['txpt_hgvsc'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
+
+gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
+       'txpt_gene_pheno', 'txpt_gene_symbol', 
+       'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
+       'txpt_protein_start', 'txpt_transcript_id'])
 
 gnomad_union_df.to_csv( args.o,  sep=',', index=False )
 
