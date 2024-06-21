@@ -51,7 +51,9 @@ v4exomes_varid_sm = v4exomes.select(
                                     txpt_consequence_terms = v4exomes.vep.transcript_consequences.consequence_terms,
                                     txpt_impact = v4exomes.vep.transcript_consequences.impact,
                                     #txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
-                                    
+                                    VRS_starts = v4exomes.info.vrs.VRS_Starts,
+                                    VRS_stops = v4exomes.info.vrs.VRS_Ends,
+
                                     txpt_amino_acids = v4exomes.vep.transcript_consequences.amino_acids,
                                     txpt_appris = v4exomes.vep.transcript_consequences.appris,
                                     txpt_canonical = v4exomes.vep.transcript_consequences.canonical,
@@ -105,6 +107,9 @@ v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
                                     txpt_consequence_terms = v4genomes.vep.transcript_consequences.consequence_terms,
                                     txpt_impact = v4genomes.vep.transcript_consequences.impact,
                                     #txpt_variant_allele = v4genomes.vep.transcript_consequences.variant_allele,
+
+                                    VRS_starts = v4genomes.info.vrs.VRS_Starts,
+                                    VRS_stops = v4genomes.info.vrs.VRS_Ends,
                                     
                                     txpt_amino_acids = v4genomes.vep.transcript_consequences.amino_acids,
                                     txpt_appris = v4genomes.vep.transcript_consequences.appris,
@@ -292,7 +297,7 @@ def variant_id(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression,
 
     return var_id
 
-def variant_idCERFAC(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None):
+def variant_idCERFAC_orig(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None):
     """
     Expression for computing <chrom>:<pos>:<ref>:<alt>. Assumes alleles were split.
 
@@ -305,6 +310,25 @@ def variant_idCERFAC(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpre
     refgen = get_ref_genome(locus)
     end_alt = get_end_pos_alt(locus,alleles)
     var_id = refgen + ":" + hl.str(locus.contig) + ":" + hl.str(locus.position) + ":" + hl.str(end_alt) + ":" + alleles[0] + ":" + alleles[1]
+
+    if max_length is not None:
+        return var_id[0:max_length]
+
+    return var_id
+
+def variant_idCERFAC_VCF(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None):
+    """
+    Expression for computing <chrom>:<pos>:<ref>:<alt>. Assumes alleles were split.
+
+    Args:
+        max_length: (optional) length at which to truncate the <chrom>:<pos>:<ref>:<alt> string
+
+    Return:
+        string: "<chrom>:<pos>:<ref>:<alt>"
+    """
+    refgen = get_ref_genome(locus)
+    end_alt = get_end_pos_alt(locus,alleles)
+    var_id = refgen + ":" + hl.str(locus.contig) + ":" + hl.str(locus.position) + ":" + alleles[0] + ":" + alleles[1]
 
     if max_length is not None:
         return var_id[0:max_length]
@@ -395,7 +419,9 @@ gnomad_union = gnomad_union.annotate(chr_id=chromosome_id(gnomad_union.locus, gn
 #gnomad_union = gnomad_union.annotate(gnomad_variant_id_B=variant_id_dash(gnomad_union.locus, gnomad_union.alleles))
 
 gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
-gnomad_union = gnomad_union.annotate(CERFAC_variant_id=variant_idCERFAC(gnomad_union.locus, gnomad_union.alleles))
+gnomad_union = gnomad_union.annotate(CERFAC_variant_id_orig=variant_idCERFAC_orig(gnomad_union.locus, gnomad_union.alleles))
+
+gnomad_union = gnomad_union.annotate(CERFAC_variant_id_VCF=variant_idCERFAC_VCF(gnomad_union.locus, gnomad_union.alleles))
 
 gnomad_union_df = gnomad_union.to_pandas()
 gnomad_union_df = gnomad_union_df.sort_index(axis=1)
@@ -403,7 +429,7 @@ gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 badcols = [
        'txpt_amino_acids', 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
        'txpt_consequence_terms', 'txpt_distance', 'txpt_domains', 'txpt_exon',
-       'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset',
+       'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset', 'VRS_starts','VRS_stops',
        'txpt_gene_pheno', 'txpt_gene_symbol', 'txpt_impact', 'txpt_intron',
        'txpt_lof', 'txpt_lof_filter', 'txpt_lof_flags', 'txpt_lof_info',
        'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
@@ -411,9 +437,11 @@ badcols = [
 gnomad_union_df = gnomad_union_df.explode(badcols)
 gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_canonical == 1]
 gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == args.g]
+#there are duplicate rows for this column with either the ENS ID or the NM ID, choose the NM ID
 gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
+
 #consequence terms  needs explanding again!
-badcols = ['txpt_consequence_terms']
+badcols = ['txpt_consequence_terms', 'txpt_uniprot_isoform', 'VRS_starts','VRS_stops']
 gnomad_union_df = gnomad_union_df.explode(badcols)
 #should probably be optional along with splice variants
 gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
@@ -426,14 +454,23 @@ gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "ups
 #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
 #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
 
-#drop cols txpt_canonical, txpt_appris, txpt_biotype txpt_gene_pheno txpt_gene_symbol 'txpt_mane_plus_clinical', 'txpt_mane_select', seq region name, refgenome chrid
 gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
+gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'seq_region_name','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+
 gnomad_union_df['txpt_hgvsc'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
-gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
-       'txpt_gene_pheno', 'txpt_gene_symbol', 
+gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome', 'seq_region_name','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+
+
+#drop cols txpt_canonical, txpt_appris, txpt_biotype txpt_gene_pheno txpt_gene_symbol 'txpt_mane_plus_clinical', 'txpt_mane_select', seq region name, refgenome chrid
+
+
+#probably remove 'variant_type', 'variant_type_exomes','variant_type_genomes'
+gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance','txpt_hgvs_offset', 'txpt_biotype', 'txpt_canonical',
+       'txpt_gene_pheno', 'txpt_gene_symbol', 'seq_region_name','chr_id','ref_genome',
        'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
        'txpt_protein_start', 'txpt_transcript_id'])
+
 
 gnomad_union_df.to_csv( args.o,  sep=',', index=False )
 

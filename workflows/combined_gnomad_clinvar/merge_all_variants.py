@@ -16,6 +16,6 @@ args = parser.parse_args()
 
 cv_table = pd.read_csv(args.c, sep=',' )
 gnomad_vars = pd.read_csv(args.g, sep=',' )
-combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='gn', rsuffix='cv' )
-combined.sort_values(['CERFAC_variant_id'])
+combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
+combined.sort_values(['txpt_hgvsc'])
 combined.to_csv( args.o,  sep=',', index=True )

@@ -13,11 +13,12 @@ args = parser.parse_args()
 
 Gene_CV_basic = pd.read_csv(args.f, delimiter="\t", 
                             names =["row_type", "VCV_ID", "ClinVar_variant_ID", "variant_type","submissions", "version", 
-                                "assembly", "Chr", "start", "stop", "ref", "alt","variant_length", "variant_effect","txpt_hgvsc", 
+                                "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
                                 "date_created", "date_updated",  "date_submitted", 
                                 "review_status","germline_classification",
                                 "onco_review_status","oncogenicity_classification",
                                 "som_review_status","somatic_classification",
+                                "variant_effect","txpt_hgvsc",
                                 "comment",
                                 "functional_category", "FA_comment",
                                 "CA_ID", "functional_result"] , header=None, keep_default_na=False)
@@ -28,7 +29,6 @@ trait_set['TraitSet_ID'] = trait_set['TraitSet_ID'].fillna("none")
 trait_set[['TraitSet_ID' ]] = trait_set[['TraitSet_ID' ]].astype('str')
 trait_set[['Trait_ID' ]] = trait_set[['Trait_ID' ]].astype('str')
 trait_set['MG_ID'] = trait_set['MG_ID'].fillna("none")
-trait_set['Evidence'] = trait_set['Evidence'].fillna("none")
 trait_set['Trait_Type'] = trait_set['Trait_Type'].fillna("none")
 trait_set['TS_Type'] = trait_set['TS_Type'].fillna("none")
 trait_set=trait_set.sort_values([ "VCV_ID", "MG_ID"])
@@ -54,7 +54,6 @@ trait_comb['MG_ID'] = trait_comb['MG_ID'].fillna("none")
 trait_comb['CA_ID'] = trait_comb['CA_ID'].fillna("none")
 trait_comb['MG_disease_name'] = trait_comb['MG_disease_name'].fillna("none")
 trait_comb['TraitSet_ID'] = trait_comb['TraitSet_ID'].fillna("none")
-trait_comb['Evidence'] = trait_comb['Evidence'].fillna("none")
 trait_comb['Trait_Type_y'] = trait_comb['Trait_Type_y'].fillna("none")
 trait_comb['Trait_Type_x'] = trait_comb['Trait_Type_x'].fillna("none")
 trait_comb['TS_Type'] = trait_comb['TS_Type'].fillna("none")
@@ -63,11 +62,20 @@ trait_comb = trait_comb.drop(trait_comb[(trait_comb['TraitSet_ID'] == "none") & 
 
 clinvar_complete = pd.merge(Gene_CV_basic, trait_comb, how='outer', on=["VCV_ID", "CA_ID"])
 clinvar_complete['Chr'] = 'chr' + clinvar_complete['Chr'].astype(str)
-clinvar_complete['CERFAC_variant_id'] = clinvar_complete[['assembly', 'Chr','start','stop','ref','alt' ]].astype(str).agg(':'.join, axis=1)
+clinvar_complete['CERFAC_variant_id_orig'] = clinvar_complete[['assembly', 'Chr','start','stop','ref','alt' ]].astype(str).agg(':'.join, axis=1)
+clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr','pos_VCF','ref','alt' ]].astype(str).agg(':'.join, axis=1)
+clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
+clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
 cols = ['row_type',
- 'VCV_ID','CERFAC_variant_id','ClinVar_variant_ID','submissions',
- #'assembly','Chr','start','stop','ref','alt',
+ 'VCV_ID',
+ 'CERFAC_variant_id_orig',
+ 'CERFAC_variant_id_VCF',
+ 'CERFAC_variant_id_HGVS_long',
+ 'CERFAC_variant_id_HGVS_short',
+ 'ClinVar_variant_ID','submissions',
+ #'assembly','Chr',
+ 'start','stop','pos_VCF','ref','alt',
  'variant_length', 'MG_disease_name','ContributesToAggregateClassification',
  'variant_type', 'variant_effect','txpt_hgvsc', 'review_status',
  'germline_classification', 'oncogenicity_classification',
