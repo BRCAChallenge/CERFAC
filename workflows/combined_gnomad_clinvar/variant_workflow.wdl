@@ -140,7 +140,6 @@ task get_gnomad_variants {
         import re 
 
         import gnomad
-        # Hail-specific packages
         import hail as hl
 
         start_pos =hl.int32("~{GENE_START_LOCUS}")
@@ -154,26 +153,20 @@ task get_gnomad_variants {
         from gnomad.resources.grch38.gnomad import public_release
         v4genomes = public_release("genomes").ht()
         v4genomes.count()
-        #gnomad exome data
         v4exomes_varid_sm = v4exomes.select( 
-                                            v4exomes.freq,          #must be broken down further
-                                            #v4exomes.joint_freq, 
-                                            #v4exomes.vep.id,
+                                            v4exomes.freq, 
                                             v4exomes.vep.allele_string, 
                                             v4exomes.vep.start, 
                                             v4exomes.vep.end, 
-                                            #v4exomes.vep.strand, 
                                             v4exomes.vep.seq_region_name, 
                                             v4exomes.vep.variant_class,
                                             v4exomes.allele_info.allele_type,                                         
                                             v4exomes.in_silico_predictors.spliceai_ds_max,
                                             variant_type_exomes =   v4exomes.allele_info.variant_type,
                                             n_alt_alleles_exomes =   v4exomes.allele_info.n_alt_alleles,
-                                            #txpt_allele_num = v4exomes.vep.transcript_consequences.allele_num,
                                             txpt_biotype = v4exomes.vep.transcript_consequences.biotype,
                                             txpt_consequence_terms = v4exomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4exomes.vep.transcript_consequences.impact,
-                                            #txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
                                             VRS_starts = v4exomes.info.vrs.VRS_Starts,
                                             VRS_stops = v4exomes.info.vrs.VRS_Ends,
 
@@ -186,10 +179,8 @@ task get_gnomad_variants {
                                             txpt_hgvsc = v4exomes.vep.transcript_consequences.hgvsc,
                                             txpt_hgvsp = v4exomes.vep.transcript_consequences.hgvsp,
                                             txpt_hgvs_offset = v4exomes.vep.transcript_consequences.hgvs_offset,
-                                            #txpt_gene_id = v4exomes.vep.transcript_consequences.gene_id,
                                             txpt_gene_pheno = v4exomes.vep.transcript_consequences.gene_pheno,
                                             txpt_gene_symbol = v4exomes.vep.transcript_consequences.gene_symbol,
-                                            #txpt_gene_symbol_source = v4exomes.vep.transcript_consequences.gene_symbol_source,
                                             txpt_intron = v4exomes.vep.transcript_consequences.intron,
                                             txpt_lof = v4exomes.vep.transcript_consequences.lof,
                                             txpt_lof_flags = v4exomes.vep.transcript_consequences.lof_flags,
@@ -199,24 +190,18 @@ task get_gnomad_variants {
                                             txpt_mane_plus_clinical = v4exomes.vep.transcript_consequences.mane_plus_clinical,
                                             txpt_protein_start = v4exomes.vep.transcript_consequences.protein_start,
                                             txpt_protein_end = v4exomes.vep.transcript_consequences.protein_end,
-                                            #txpt_source = v4exomes.vep.transcript_consequences.source,
                                             txpt_transcript_id = v4exomes.vep.transcript_consequences.transcript_id,
-                                            #txpt_tsl = v4exomes.vep.transcript_consequences.tsl,
                                             txpt_uniprot_isoform = v4exomes.vep.transcript_consequences.uniprot_isoform
                                         
 
                                         )
-
-        #gnomad genome data
-        v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
+        v4genomes_varid_sm = v4genomes.select(  
                                             v4genomes.freq, 
 
                                                                                 
-                                            #v4genomes.vep.id,
                                             v4genomes.vep.allele_string, 
                                             v4genomes.vep.start, 
                                             v4genomes.vep.end, 
-                                            #v4genomes.vep.strand, 
                                             v4genomes.vep.seq_region_name, 
                                             v4genomes.vep.variant_class,
                                             v4genomes.allele_info.variant_type,
@@ -225,11 +210,9 @@ task get_gnomad_variants {
                                             v4genomes.in_silico_predictors.spliceai_ds_max,
                                             variant_type_genomes =   v4genomes.allele_info.variant_type,
                                             n_alt_alleles_genomes=   v4genomes.allele_info.n_alt_alleles,
-                                            #txpt_allele_num = v4genomes.vep.transcript_consequences.allele_num,
                                             txpt_biotype = v4genomes.vep.transcript_consequences.biotype,
                                             txpt_consequence_terms = v4genomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4genomes.vep.transcript_consequences.impact,
-                                            #txpt_variant_allele = v4genomes.vep.transcript_consequences.variant_allele,
 
                                             VRS_starts = v4genomes.info.vrs.VRS_Starts,
                                             VRS_stops = v4genomes.info.vrs.VRS_Ends,
@@ -243,10 +226,8 @@ task get_gnomad_variants {
                                             txpt_hgvsc = v4genomes.vep.transcript_consequences.hgvsc,
                                             txpt_hgvsp = v4genomes.vep.transcript_consequences.hgvsp,
                                             txpt_hgvs_offset = v4genomes.vep.transcript_consequences.hgvs_offset,
-                                            #txpt_gene_id = v4genomes.vep.transcript_consequences.gene_id,
                                             txpt_gene_pheno = v4genomes.vep.transcript_consequences.gene_pheno,
                                             txpt_gene_symbol = v4genomes.vep.transcript_consequences.gene_symbol,
-                                            #txpt_gene_symbol_source = v4genomes.vep.transcript_consequences.gene_symbol_source,
                                             txpt_intron = v4genomes.vep.transcript_consequences.intron,
                                             txpt_lof = v4genomes.vep.transcript_consequences.lof,
                                             txpt_lof_flags = v4genomes.vep.transcript_consequences.lof_flags,
@@ -256,20 +237,11 @@ task get_gnomad_variants {
                                             txpt_mane_plus_clinical = v4genomes.vep.transcript_consequences.mane_plus_clinical,
                                             txpt_protein_start = v4genomes.vep.transcript_consequences.protein_start,
                                             txpt_protein_end = v4genomes.vep.transcript_consequences.protein_end,
-                                            #txpt_source = v4genomes.vep.transcript_consequences.source,
                                             txpt_transcript_id = v4genomes.vep.transcript_consequences.transcript_id,
-                                            #txpt_tsl = v4genomes.vep.transcript_consequences.tsl,
                                             txpt_uniprot_isoform = v4genomes.vep.transcript_consequences.uniprot_isoform
 
                                                 )
 
-        #The 'freq' annotation is an array, and each element of the array is a struct that contains the alternate allele count (AC), alternate allele frequency (AF), total number of alleles (AN), 
-        #and number of homozygous alternate individuals (homozygote_count) for a specific sample grouping.
-        #Use the 'freq_index_dict' global annotation to retrieve frequency information for a specific group of samples from the 'freq' array. 
-        #This global annotation is a dictionary keyed by sample grouping combinations whose values are the combination's index in the 'freq' array.
-
-
-        #freq, with ukb
         v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_afr=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['afr_adj']])
 
         v4exomes_varid_sm = v4exomes_varid_sm.annotate(exome_freq_main_adj_amr=v4exomes_varid_sm.freq[v4exomes_varid_sm.freq_index_dict['amr_adj']])
@@ -290,7 +262,6 @@ task get_gnomad_variants {
 
 
 
-        #freq, genomes, with ukb
         v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_afr=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['afr_adj']])
 
         v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_amr=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['amr_adj']])
@@ -310,14 +281,10 @@ task get_gnomad_variants {
         v4genomes_varid_sm = v4genomes_varid_sm.annotate(genome_freq_adj_asj=v4genomes_varid_sm.freq[v4genomes_varid_sm.freq_index_dict['asj_adj']])
 
 
-        #The exomes and genomes databases do not contain gnomAD variant IDs. However, we can write a function that creates them from the locus and alleles data.
-        #the variant annotation functions
         def get_ref_genome(locus: hl.expr.LocusExpression):
             """
             Expression for reference genome
             """
-            #hl.genetics.Locus to get the Locus
-            #hl.expr.LocusExpression to get the LocusExpression
             
             ref_gen = hl.str(gnomad.utils.reference_genome.get_reference_genome(locus).name)
             return ref_gen
@@ -513,33 +480,20 @@ task get_gnomad_variants {
         genomes_select_aj = genomes_select_aj.drop('freq')
 
 
-        #flattening allows for union later
 
         joined_gnomad_inner = joined_gnomad_inner.flatten()
         exomes_select_aj = exomes_select_aj.flatten()
         genomes_select_aj = genomes_select_aj.flatten()
 
-        #adding the overlapping variants to the exomes exclusive variants
         gnomad_union_1 = exomes_select_aj.union(joined_gnomad_inner, unify=True)
         gnomad_union_1.count()
 
         gnomad_union = gnomad_union_1.union(genomes_select_aj, unify=True)
 
-        #get reference genome column
         gnomad_union = gnomad_union.annotate(ref_genome=get_ref_genome(gnomad_union.locus))
 
-        #chr id
         gnomad_union = gnomad_union.annotate(chr_id=chromosome_id(gnomad_union.locus, gnomad_union.alleles))
 
-        #get start and end positions
-        #gnomad_union = gnomad_union.annotate(ref_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
-        #gnomad_union = gnomad_union.annotate(ref_end=get_end_pos_ref(gnomad_union.locus, gnomad_union.alleles))
-
-        #gnomad_union = gnomad_union.annotate(alt_start=get_start_pos(gnomad_union.locus, gnomad_union.alleles))
-        #gnomad_union = gnomad_union.annotate(alt_end=get_end_pos_alt(gnomad_union.locus, gnomad_union.alleles))
-
-        #gnomad_union = gnomad_union.annotate(gnomad_variant_id=variant_id(gnomad_union.locus, gnomad_union.alleles))
-        #gnomad_union = gnomad_union.annotate(gnomad_variant_id_B=variant_id_dash(gnomad_union.locus, gnomad_union.alleles))
 
         gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
         gnomad_union = gnomad_union.annotate(CERFAC_variant_id_orig=variant_idCERFAC_orig(gnomad_union.locus, gnomad_union.alleles))
@@ -560,30 +514,17 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.explode(badcols)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_canonical == 1]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == "~{GENE_NAME}"]
-        #there are duplicate rows for this column with either the ENS ID or the NM ID, choose the NM ID
         gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
 
-        #consequence terms  needs explanding again!
         badcols = ['txpt_consequence_terms']
         gnomad_union_df = gnomad_union_df.explode(badcols)
 
-        #commenting out because there's more than one start and stop causing duplicate rows in gnomad
-        #badcols = [ 'VRS_starts','VRS_stops']
-        #gnomad_union_df = gnomad_union_df.explode(badcols)
 
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
-        #should probably be optional along with splice variants
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
 
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "intron_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_region_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_region_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_acceptor_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
-        #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
 
         gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
         gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
@@ -593,13 +534,8 @@ task get_gnomad_variants {
         gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
 
-        #drop cols txpt_canonical, txpt_appris, txpt_biotype txpt_gene_pheno txpt_gene_symbol 'txpt_mane_plus_clinical', 'txpt_mane_select', seq region name, refgenome chrid
-
-
-        #probably remove 'variant_type', 'variant_type_exomes','variant_type_genomes'
         gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance','txpt_hgvs_offset', 'txpt_biotype', 'txpt_canonical',
             'txpt_gene_pheno', 'txpt_gene_symbol', 'seq_region_name','chr_id','ref_genome',
-            # 'txpt_mane_plus_clinical', 'txpt_mane_select',  'txpt_transcript_id',
             'txpt_protein_end', 'txpt_protein_start'])
         gnomad_union_df.to_csv( "gnomad_variants_MANE.csv",  sep=',', index=False )
         CODE
@@ -934,7 +870,6 @@ task merge_variants {
     command <<<
         set -eux -o pipefail
         python3 <<CODE
-        # python3 ~{MERGE_ALL_SCRIPT} -g ~{gnomadvar} -c ~{clinvar_var}  -o ~{GENE_NAME}_combined_variants.csv
         import os
         import io
         import json
