@@ -160,15 +160,11 @@ task get_gnomad_variants {
                                             v4exomes.vep.end, 
                                             v4exomes.vep.seq_region_name, 
                                             v4exomes.vep.variant_class,
-                                            v4exomes.allele_info.allele_type,                                         
                                             v4exomes.in_silico_predictors.spliceai_ds_max,
-                                            variant_type_exomes =   v4exomes.allele_info.variant_type,
                                             n_alt_alleles_exomes =   v4exomes.allele_info.n_alt_alleles,
                                             txpt_biotype = v4exomes.vep.transcript_consequences.biotype,
                                             txpt_consequence_terms = v4exomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4exomes.vep.transcript_consequences.impact,
-                                            VRS_starts = v4exomes.info.vrs.VRS_Starts,
-                                            VRS_stops = v4exomes.info.vrs.VRS_Ends,
 
                                             txpt_amino_acids = v4exomes.vep.transcript_consequences.amino_acids,
                                             txpt_appris = v4exomes.vep.transcript_consequences.appris,
@@ -178,7 +174,6 @@ task get_gnomad_variants {
                                             txpt_exon = v4exomes.vep.transcript_consequences.exon,
                                             txpt_hgvsc = v4exomes.vep.transcript_consequences.hgvsc,
                                             txpt_hgvsp = v4exomes.vep.transcript_consequences.hgvsp,
-                                            txpt_hgvs_offset = v4exomes.vep.transcript_consequences.hgvs_offset,
                                             txpt_gene_pheno = v4exomes.vep.transcript_consequences.gene_pheno,
                                             txpt_gene_symbol = v4exomes.vep.transcript_consequences.gene_symbol,
                                             txpt_intron = v4exomes.vep.transcript_consequences.intron,
@@ -204,18 +199,12 @@ task get_gnomad_variants {
                                             v4genomes.vep.end, 
                                             v4genomes.vep.seq_region_name, 
                                             v4genomes.vep.variant_class,
-                                            v4genomes.allele_info.variant_type,
-                                            v4genomes.allele_info.allele_type,                                         
                                         
                                             v4genomes.in_silico_predictors.spliceai_ds_max,
-                                            variant_type_genomes =   v4genomes.allele_info.variant_type,
                                             n_alt_alleles_genomes=   v4genomes.allele_info.n_alt_alleles,
                                             txpt_biotype = v4genomes.vep.transcript_consequences.biotype,
                                             txpt_consequence_terms = v4genomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4genomes.vep.transcript_consequences.impact,
-
-                                            VRS_starts = v4genomes.info.vrs.VRS_Starts,
-                                            VRS_stops = v4genomes.info.vrs.VRS_Ends,
                                             
                                             txpt_amino_acids = v4genomes.vep.transcript_consequences.amino_acids,
                                             txpt_appris = v4genomes.vep.transcript_consequences.appris,
@@ -225,7 +214,6 @@ task get_gnomad_variants {
                                             txpt_exon = v4genomes.vep.transcript_consequences.exon,
                                             txpt_hgvsc = v4genomes.vep.transcript_consequences.hgvsc,
                                             txpt_hgvsp = v4genomes.vep.transcript_consequences.hgvsp,
-                                            txpt_hgvs_offset = v4genomes.vep.transcript_consequences.hgvs_offset,
                                             txpt_gene_pheno = v4genomes.vep.transcript_consequences.gene_pheno,
                                             txpt_gene_symbol = v4genomes.vep.transcript_consequences.gene_symbol,
                                             txpt_intron = v4genomes.vep.transcript_consequences.intron,
@@ -424,32 +412,6 @@ task get_gnomad_variants {
                 return var_id[0:max_length]
 
             return var_id
-
-        def var_type_gnomad( alleles: hl.expr.ArrayExpression):
-            """
-            Expression for the allele type according to gnomad: 
-            The possible return values are:
-            "SNP"
-
-            "MNP"
-
-            "Insertion"
-
-            "Deletion"
-
-            "Complex"
-
-            "Star"
-
-            "Symbolic"
-
-            "Unknown"
-
-
-            """
-            var_type = hl.str(hl.allele_type(hl.str(alleles[0]),hl.str(alleles[1])))
-
-            return var_type
 
 
 
@@ -807,7 +769,6 @@ task merge_clinvar_variants {
 
         clinvar_complete = pd.merge(Gene_CV_basic, trait_comb, how='outer', on=["VCV_ID", "CA_ID"])
         clinvar_complete['Chr'] = 'chr' + clinvar_complete['Chr'].astype(str)
-        clinvar_complete['CERFAC_variant_id_orig'] = clinvar_complete[['assembly', 'Chr','start','stop','ref','alt' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr','pos_VCF','ref','alt' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
