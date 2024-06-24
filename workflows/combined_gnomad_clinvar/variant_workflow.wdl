@@ -495,9 +495,6 @@ task get_gnomad_variants {
         gnomad_union = gnomad_union.annotate(chr_id=chromosome_id(gnomad_union.locus, gnomad_union.alleles))
 
 
-        gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
-        gnomad_union = gnomad_union.annotate(CERFAC_variant_id_orig=variant_idCERFAC_orig(gnomad_union.locus, gnomad_union.alleles))
-
         gnomad_union = gnomad_union.annotate(CERFAC_variant_id_VCF=variant_idCERFAC_VCF(gnomad_union.locus, gnomad_union.alleles))
 
         gnomad_union_df = gnomad_union.to_pandas()
@@ -524,6 +521,15 @@ task get_gnomad_variants {
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "intron_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_region_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_region_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_acceptor_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "5_prime_UTR_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "3_prime_UTR_variant"]
 
 
         gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
@@ -829,9 +835,13 @@ task merge_clinvar_variants {
         'version']
 
         clinvar_complete = clinvar_complete[cols]
+
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "intron variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice donor variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice acceptor variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "5 prime UTR variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "3 prime UTR variant"]
         clinvar_complete.to_csv("clinvar_variants.csv", sep=',', index=False )
-
-
 
 
         CODE
