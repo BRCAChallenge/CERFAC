@@ -775,7 +775,6 @@ task merge_clinvar_variants {
 
         cols = ['row_type',
         'VCV_ID',
-        'CERFAC_variant_id_orig',
         'CERFAC_variant_id_VCF',
         'CERFAC_variant_id_HGVS_long',
         'CERFAC_variant_id_HGVS_short',
