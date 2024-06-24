@@ -429,7 +429,7 @@ gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 badcols = [
        'txpt_amino_acids', 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
        'txpt_consequence_terms', 'txpt_distance', 'txpt_domains', 'txpt_exon',
-       'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset', 'VRS_starts','VRS_stops',
+       'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset', 
        'txpt_gene_pheno', 'txpt_gene_symbol', 'txpt_impact', 'txpt_intron',
        'txpt_lof', 'txpt_lof_filter', 'txpt_lof_flags', 'txpt_lof_info',
        'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
@@ -440,8 +440,16 @@ gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == args.g]
 #there are duplicate rows for this column with either the ENS ID or the NM ID, choose the NM ID
 gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
+
 #consequence terms  needs explanding again!
-badcols = ['txpt_consequence_terms', 'txpt_uniprot_isoform', 'VRS_starts','VRS_stops']
+badcols = ['txpt_consequence_terms']
+gnomad_union_df = gnomad_union_df.explode(badcols)
+
+#commenting out because there's more than one start and stop causing duplicate rows in gnomad
+#badcols = [ 'VRS_starts','VRS_stops']
+#gnomad_union_df = gnomad_union_df.explode(badcols)
+
+badcols = ['txpt_uniprot_isoform']
 gnomad_union_df = gnomad_union_df.explode(badcols)
 #should probably be optional along with splice variants
 gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
@@ -455,11 +463,11 @@ gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "ups
 #gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
 
 gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
-gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'seq_region_name','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
 gnomad_union_df['txpt_hgvsc'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
-gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome', 'seq_region_name','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
 
 #drop cols txpt_canonical, txpt_appris, txpt_biotype txpt_gene_pheno txpt_gene_symbol 'txpt_mane_plus_clinical', 'txpt_mane_select', seq region name, refgenome chrid
@@ -468,8 +476,8 @@ gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome',
 #probably remove 'variant_type', 'variant_type_exomes','variant_type_genomes'
 gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance','txpt_hgvs_offset', 'txpt_biotype', 'txpt_canonical',
        'txpt_gene_pheno', 'txpt_gene_symbol', 'seq_region_name','chr_id','ref_genome',
-       'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
-       'txpt_protein_start', 'txpt_transcript_id'])
+      # 'txpt_mane_plus_clinical', 'txpt_mane_select',  'txpt_transcript_id',
+       'txpt_protein_end', 'txpt_protein_start'])
 
 
 gnomad_union_df.to_csv( args.o,  sep=',', index=False )
