@@ -568,7 +568,7 @@ task get_gnomad_variants {
 
 
         gnomad_union_df = gnomad_union_df.rename(columns={"alleles": "allele_list",   "locus": "pos_VCF",    "exorgen": "set"}, errors='raise')
-        gnomad_union_df = gnomad_union_df.rename(columns={"start": "pos_start_vep",   "end": "pos_stop_vep",    "exorgen": "set"}, errors='raise')
+        gnomad_union_df = gnomad_union_df.rename(columns={"start": "pos_start_vep",   "end": "pos_stop_vep"}, errors='raise')
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df = gnomad_union_df.add_prefix('gnomad_')
 
