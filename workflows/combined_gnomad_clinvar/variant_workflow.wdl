@@ -954,7 +954,7 @@ task merge_variants {
 
     output {
         File combined_var = "~{GENE_NAME}_combined_variants.csv"
-        Int clinvar_variants_count = read_int("combinedcount.txt")
+        Int combined_variants_count = read_int("combinedcount.txt")
     }
 
     runtime {
