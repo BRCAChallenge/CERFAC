@@ -465,7 +465,7 @@ task get_gnomad_variants {
         badcols = [
             'txpt_amino_acids', 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
             'txpt_consequence_terms', 'txpt_distance', 'txpt_domains', 'txpt_exon',
-            'txpt_hgvsc','txpt_hgvsp','txpt_hgvs_offset', 
+            'txpt_hgvsc','txpt_hgvsp',
             'txpt_gene_pheno', 'txpt_gene_symbol', 'txpt_impact', 'txpt_intron',
             'txpt_lof', 'txpt_lof_filter', 'txpt_lof_flags', 'txpt_lof_info',
             'txpt_mane_plus_clinical', 'txpt_mane_select', 'txpt_protein_end',
