@@ -110,6 +110,10 @@ v4genomes_varid_sm = v4genomes.select(  #v4genomes.joint_freq,
 
                                     VRS_starts = v4genomes.info.vrs.VRS_Starts,
                                     VRS_stops = v4genomes.info.vrs.VRS_Ends,
+                                                                        VRS_Allele_IDs = v4genomes.info.vrs.VRS_Allele_IDs,
+                                    VRS_States = v4genomes.info.vrs.VRS_States,
+                                    VRS_starts = v4genomes.info.vrs.VRS_Starts,
+                                    VRS_stops = v4genomes.info.vrs.VRS_Ends,
                                     
                                     txpt_amino_acids = v4genomes.vep.transcript_consequences.amino_acids,
                                     txpt_appris = v4genomes.vep.transcript_consequences.appris,

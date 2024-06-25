@@ -169,7 +169,6 @@ task get_gnomad_variants {
                                             variant_effect = v4exomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4exomes.vep.transcript_consequences.impact,
                                             txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
-                                            VRS_Allele_IDs = v4exomes.info.vrs.VRS_Allele_IDs,
                                             VRS_States = v4exomes.info.vrs.VRS_States,
                                             VRS_starts = v4exomes.info.vrs.VRS_Starts,
                                             VRS_stops = v4exomes.info.vrs.VRS_Ends,
@@ -194,21 +193,15 @@ task get_gnomad_variants {
                                             txpt_protein_start = v4exomes.vep.transcript_consequences.protein_start,
                                             txpt_protein_end = v4exomes.vep.transcript_consequences.protein_end,
                                             txpt_transcript_id = v4exomes.vep.transcript_consequences.transcript_id,
-                                            txpt_uniprot_isoform = v4exomes.vep.transcript_consequences.uniprot_isoform
-                                        
-
-                                        )
-        v4genomes_varid_sm = v4genomes.select(  
-                                            v4genomes.freq, 
-
-                                                                                
+                                            txpt_uniprot_isoform = v4exomes.vep.transcript_consequences.uniprot_isoform )
+        v4genomes_varid_sm = v4genomes.select(  v4genomes.freq, 
                                             v4genomes.vep.allele_string, 
                                             pos_start_vep = v4genomes.vep.start, 
                                             pos_stop_vep = v4genomes.vep.end, 
                                             v4genomes.vep.seq_region_name, 
                                             v4genomes.vep.variant_class,
                                             txpt_variant_allele = v4genomes.vep.transcript_consequences.variant_allele,
-                                            VRS_Allele_IDs = v4genomes.info.vrs.VRS_Allele_IDs,
+
                                             VRS_States = v4genomes.info.vrs.VRS_States,
                                             VRS_starts = v4genomes.info.vrs.VRS_Starts,
                                             VRS_stops = v4genomes.info.vrs.VRS_Ends,
