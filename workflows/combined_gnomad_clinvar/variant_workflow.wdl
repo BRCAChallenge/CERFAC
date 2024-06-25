@@ -567,7 +567,7 @@ task get_gnomad_variants {
         gnomad_union_df[['txpt_exon' ]] = gnomad_union_df[['txpt_exon' ]].astype('str')
         gnomad_union_df[['txpt_intron' ]] = gnomad_union_df[['txpt_intron' ]].astype('str')
 
-        gnomad_variants_count_pd = gnomad_union_df['txpt_hgvsc'].nunique()
+        gnomad_variants_count_pd = str(gnomad_union_df['txpt_hgvsc'].nunique())
         file_name = "gnomadcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(gnomad_variants_count_pd)
@@ -589,7 +589,7 @@ task get_gnomad_variants {
 
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
-        Int gnomad_variants_count = read_int("gnomadcount.txt")
+        Int gnomad_variants_count = read_string("gnomadcount.txt")
 
     }
 
@@ -881,7 +881,7 @@ task merge_clinvar_variants {
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "5 prime UTR variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "3 prime UTR variant"]
 
-        clinvar_variants_count_pd = clinvar_complete['txpt_hgvsc'].nunique()
+        clinvar_variants_count_pd = str(clinvar_complete['txpt_hgvsc'].nunique())
         file_name = "clinvarcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(clinvar_variants_count_pd)
@@ -896,7 +896,7 @@ task merge_clinvar_variants {
 
     output {
         File clinvar_var = "clinvar_variants.csv"
-        Int clinvar_variants_count = read_int("clinvarcount.txt")
+        Int clinvar_variants_count = read_string("clinvarcount.txt")
     }
 
     runtime {
