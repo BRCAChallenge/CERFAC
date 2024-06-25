@@ -62,9 +62,9 @@ workflow annotate_functional_variants {
 
     output{
         File combined_var = merge_variants.combined_var
-        Int gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
-        Int clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
-        Int combined_variants_count = merge_variants.combined_variants_count
+        String gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
+        String clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
+        String combined_variants_count = merge_variants.combined_variants_count
     }
 }
 
@@ -589,7 +589,7 @@ task get_gnomad_variants {
 
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
-        Int gnomad_variants_count = read_string("gnomadcount.txt")
+        String gnomad_variants_count = read_string("gnomadcount.txt")
 
     }
 
@@ -896,7 +896,7 @@ task merge_clinvar_variants {
 
     output {
         File clinvar_var = "clinvar_variants.csv"
-        Int clinvar_variants_count = read_string("clinvarcount.txt")
+        String clinvar_variants_count = read_string("clinvarcount.txt")
     }
 
     runtime {
@@ -940,7 +940,7 @@ task merge_variants {
         combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
         combined.sort_values(['txpt_hgvsc'])
 
-        combined_variants_count_pd = combined['txpt_hgvsc'].nunique()
+        combined_variants_count_pd = str(combined['txpt_hgvsc'].nunique())
         file_name = "combinedcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(combined_variants_count_pd)
@@ -954,7 +954,7 @@ task merge_variants {
 
     output {
         File combined_var = "~{GENE_NAME}_combined_variants.csv"
-        Int combined_variants_count = read_int("combinedcount.txt")
+        String combined_variants_count = read_string("combinedcount.txt")
     }
 
     runtime {
