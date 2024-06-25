@@ -502,7 +502,7 @@ task get_gnomad_variants {
         gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
 
-        gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance','txpt_hgvs_offset', 'txpt_biotype', 'txpt_canonical',
+        gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance', 'txpt_biotype', 'txpt_canonical',
             'txpt_gene_pheno', 'txpt_gene_symbol', 'seq_region_name','chr_id','ref_genome',
             'txpt_protein_end', 'txpt_protein_start'])
         gnomad_union_df.to_csv( "gnomad_variants_MANE.csv",  sep=',', index=False )
