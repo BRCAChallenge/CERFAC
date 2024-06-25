@@ -418,7 +418,7 @@ gnomad_union = gnomad_union.annotate(chr_id=chromosome_id(gnomad_union.locus, gn
 #gnomad_union = gnomad_union.annotate(gnomad_variant_id=variant_id(gnomad_union.locus, gnomad_union.alleles))
 #gnomad_union = gnomad_union.annotate(gnomad_variant_id_B=variant_id_dash(gnomad_union.locus, gnomad_union.alleles))
 
-gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
+#gnomad_union = gnomad_union.annotate(var_type_gnomad=var_type_gnomad(gnomad_union.alleles))
 gnomad_union = gnomad_union.annotate(CERFAC_variant_id_orig=variant_idCERFAC_orig(gnomad_union.locus, gnomad_union.alleles))
 
 gnomad_union = gnomad_union.annotate(CERFAC_variant_id_VCF=variant_idCERFAC_VCF(gnomad_union.locus, gnomad_union.alleles))

@@ -62,6 +62,9 @@ workflow annotate_functional_variants {
 
     output{
         File combined_var = merge_variants.combined_var
+        Int gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
+        Int clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
+        Int combined_variants_count = merge_variants.combined_variants_count
     }
 }
 
@@ -156,15 +159,20 @@ task get_gnomad_variants {
         v4exomes_varid_sm = v4exomes.select( 
                                             v4exomes.freq, 
                                             v4exomes.vep.allele_string, 
-                                            v4exomes.vep.start, 
-                                            v4exomes.vep.end, 
+                                            pos_start_vep = v4exomes.vep.start, 
+                                            pos_stop_vep = v4exomes.vep.end, 
                                             v4exomes.vep.seq_region_name, 
                                             v4exomes.vep.variant_class,
                                             v4exomes.in_silico_predictors.spliceai_ds_max,
                                             n_alt_alleles_exomes =   v4exomes.allele_info.n_alt_alleles,
                                             txpt_biotype = v4exomes.vep.transcript_consequences.biotype,
-                                            txpt_consequence_terms = v4exomes.vep.transcript_consequences.consequence_terms,
+                                            variant_effect = v4exomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4exomes.vep.transcript_consequences.impact,
+                                            txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
+                                            VRS_Allele_IDs = v4exomes.info.vrs.VRS_Allele_IDs,
+                                            VRS_States = v4exomes.info.vrs.VRS_States,
+                                            VRS_starts = v4exomes.info.vrs.VRS_Starts,
+                                            VRS_stops = v4exomes.info.vrs.VRS_Ends,
 
                                             txpt_amino_acids = v4exomes.vep.transcript_consequences.amino_acids,
                                             txpt_appris = v4exomes.vep.transcript_consequences.appris,
@@ -195,15 +203,20 @@ task get_gnomad_variants {
 
                                                                                 
                                             v4genomes.vep.allele_string, 
-                                            v4genomes.vep.start, 
-                                            v4genomes.vep.end, 
+                                            pos_start_vep = v4genomes.vep.start, 
+                                            pos_stop_vep = v4genomes.vep.end, 
                                             v4genomes.vep.seq_region_name, 
                                             v4genomes.vep.variant_class,
+                                            txpt_variant_allele = v4genomes.vep.transcript_consequences.variant_allele,
+                                            VRS_Allele_IDs = v4genomes.info.vrs.VRS_Allele_IDs,
+                                            VRS_States = v4genomes.info.vrs.VRS_States,
+                                            VRS_starts = v4genomes.info.vrs.VRS_Starts,
+                                            VRS_stops = v4genomes.info.vrs.VRS_Ends,
                                         
                                             v4genomes.in_silico_predictors.spliceai_ds_max,
                                             n_alt_alleles_genomes=   v4genomes.allele_info.n_alt_alleles,
                                             txpt_biotype = v4genomes.vep.transcript_consequences.biotype,
-                                            txpt_consequence_terms = v4genomes.vep.transcript_consequences.consequence_terms,
+                                            variant_effect = v4genomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4genomes.vep.transcript_consequences.impact,
                                             
                                             txpt_amino_acids = v4genomes.vep.transcript_consequences.amino_acids,
@@ -337,6 +350,47 @@ task get_gnomad_variants {
 
             return end_alt
 
+        def get_alt_allele_len(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression):
+            """
+            Expression alt allele
+            """
+            
+            alt_allele = hl.len(alleles[1])
+
+
+
+            return alt_allele
+        def get_ref_allele_len(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression):
+            """
+            Expression alt allele
+            """
+            
+            ref_allele = hl.len(alleles[0])
+
+
+
+            return ref_allele
+        def get_alt_allele(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression):
+            """
+            Expression alt allele
+            """
+            
+            alt_allele = hl.str(alleles[1])
+
+
+
+            return alt_allele
+
+        def get_ref_allele(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression):
+            """
+            Expression alt allele
+            """
+            
+            ref_allele = hl.str(alleles[0])
+
+
+
+            return ref_allele
 
         def variant_id_dash(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None):
             """
@@ -458,13 +512,17 @@ task get_gnomad_variants {
 
 
         gnomad_union = gnomad_union.annotate(CERFAC_variant_id_VCF=variant_idCERFAC_VCF(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(allele_ref=get_ref_allele(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(allele_alt=get_alt_allele(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(var_len_ref=get_ref_allele_len(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(var_len_alt=get_alt_allele_len(gnomad_union.locus, gnomad_union.alleles))
 
         gnomad_union_df = gnomad_union.to_pandas()
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 
         badcols = [
             'txpt_amino_acids', 'txpt_appris', 'txpt_biotype', 'txpt_canonical',
-            'txpt_consequence_terms', 'txpt_distance', 'txpt_domains', 'txpt_exon',
+            'variant_effect', 'txpt_distance', 'txpt_domains', 'txpt_exon',
             'txpt_hgvsc','txpt_hgvsp',
             'txpt_gene_pheno', 'txpt_gene_symbol', 'txpt_impact', 'txpt_intron',
             'txpt_lof', 'txpt_lof_filter', 'txpt_lof_flags', 'txpt_lof_info',
@@ -476,22 +534,22 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
 
-        badcols = ['txpt_consequence_terms']
+        badcols = ['variant_effect']
         gnomad_union_df = gnomad_union_df.explode(badcols)
 
 
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "upstream_gene_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "intron_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_region_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_region_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_acceptor_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_donor_5th_base_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "splice_polypyrimidine_tract_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "5_prime_UTR_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_consequence_terms != "3_prime_UTR_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "upstream_gene_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "intron_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_region_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_region_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_acceptor_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_5th_base_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_polypyrimidine_tract_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "5_prime_UTR_variant"]
+        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "3_prime_UTR_variant"]
 
 
         gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
@@ -505,6 +563,24 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance', 'txpt_biotype', 'txpt_canonical',
             'txpt_gene_pheno', 'txpt_gene_symbol', 'seq_region_name','chr_id','ref_genome',
             'txpt_protein_end', 'txpt_protein_start'])
+
+        gnomad_union_df[['txpt_exon' ]] = gnomad_union_df[['txpt_exon' ]].astype('str')
+        gnomad_union_df[['txpt_intron' ]] = gnomad_union_df[['txpt_intron' ]].astype('str')
+
+        gnomad_variants_count_pd = gnomad_union_df['txpt_hgvsc'].nunique()
+        file_name = "gnomadcount.txt"
+        with open(file_name, 'w') as x_file:
+            x_file.write(gnomad_variants_count_pd)
+
+
+        gnomad_union_df = gnomad_union_df.rename(columns={"alleles": "allele_list",   "locus": "pos_VCF",    "exorgen": "set"}, errors='raise')
+        gnomad_union_df = gnomad_union_df.sort_index(axis=1)
+        gnomad_union_df = gnomad_union_df.add_prefix('gnomad_')
+
+
+        
+
+
         gnomad_union_df.to_csv( "gnomad_variants_MANE.csv",  sep=',', index=False )
         CODE
 
@@ -513,6 +589,8 @@ task get_gnomad_variants {
 
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
+        Int gnomad_variants_count = read_int("gnomadcount.txt")
+
     }
 
     runtime {
@@ -520,7 +598,7 @@ task get_gnomad_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -550,7 +628,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -583,7 +661,7 @@ task extract_clinvar_variants_traitmap {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -629,7 +707,7 @@ task extract_clinvar_variants_traitset {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -693,7 +771,7 @@ task extract_clinvar_variants_basic {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -796,11 +874,19 @@ task merge_clinvar_variants {
 
         clinvar_complete = clinvar_complete[cols]
 
+
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "intron variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice donor variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice acceptor variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "5 prime UTR variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "3 prime UTR variant"]
+
+        clinvar_variants_count_pd = clinvar_complete['txpt_hgvsc'].nunique()
+        file_name = "clinvarcount.txt"
+        with open(file_name, 'w') as x_file:
+            x_file.write(clinvar_variants_count_pd)
+        clinvar_complete = clinvar_complete.rename(columns={"ref": "allele_ref",  "alt": "allele_alt",   "start": "pos_start",   "stop": "pos_stop"}, errors='raise')
+        clinvar_complete = clinvar_complete.add_prefix('clinvar_')
         clinvar_complete.to_csv("clinvar_variants.csv", sep=',', index=False )
 
 
@@ -810,6 +896,7 @@ task merge_clinvar_variants {
 
     output {
         File clinvar_var = "clinvar_variants.csv"
+        Int clinvar_variants_count = read_int("clinvarcount.txt")
     }
 
     runtime {
@@ -817,7 +904,7 @@ task merge_clinvar_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
@@ -852,6 +939,11 @@ task merge_variants {
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
         combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
         combined.sort_values(['txpt_hgvsc'])
+
+        combined_variants_count_pd = combined['txpt_hgvsc'].nunique()
+        file_name = "combinedcount.txt"
+        with open(file_name, 'w') as x_file:
+            x_file.write(combined_variants_count_pd)
         combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
 
 
@@ -862,6 +954,7 @@ task merge_variants {
 
     output {
         File combined_var = "~{GENE_NAME}_combined_variants.csv"
+        Int clinvar_variants_count = read_int("combinedcount.txt")
     }
 
     runtime {
@@ -869,7 +962,7 @@ task merge_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
