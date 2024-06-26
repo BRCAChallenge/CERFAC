@@ -53,6 +53,10 @@ v4exomes_varid_sm = v4exomes.select(
                                     #txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
                                     VRS_starts = v4exomes.info.vrs.VRS_Starts,
                                     VRS_stops = v4exomes.info.vrs.VRS_Ends,
+                                                                        VRS_Allele_IDs = v4exomes.info.vrs.VRS_Allele_IDs,
+                                    VRS_States = v4exomes.info.vrs.VRS_States,
+                                    VRS_starts = v4exomes.info.vrs.VRS_Starts,
+                                    VRS_stops = v4exomes.info.vrs.VRS_Ends,
 
                                     txpt_amino_acids = v4exomes.vep.transcript_consequences.amino_acids,
                                     txpt_appris = v4exomes.vep.transcript_consequences.appris,

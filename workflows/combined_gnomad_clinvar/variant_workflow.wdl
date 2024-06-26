@@ -931,6 +931,7 @@ task merge_variants {
 
         cv_table = pd.read_csv("~{clinvar_var}", sep=',' )
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
+        gnomad_vars = gnomad_vars.rename(columns={"gnomad_txpt_hgvsc": "txpt_hgvsc"}, errors='raise')
         combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
         combined.sort_values(['txpt_hgvsc'])
 
