@@ -934,12 +934,20 @@ task merge_variants {
         gnomad_vars = gnomad_vars.rename(columns={"gnomad_txpt_hgvsc": "txpt_hgvsc"}, errors='raise')
         cv_table = cv_table.rename(columns={"clinvar_txpt_hgvsc": "txpt_hgvsc"}, errors='raise')
         combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
+
+
         combined.sort_values(['txpt_hgvsc'])
+        combined = combined.reset_index()
+
 
         combined_variants_count_pd = str(combined['txpt_hgvsc'].nunique())
+
+
         file_name = "combinedcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(combined_variants_count_pd)
+        combined = combined.set_index('txpt_hgvsc')
+
         combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
 
 
