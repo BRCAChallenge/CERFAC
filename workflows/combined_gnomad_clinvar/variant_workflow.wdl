@@ -569,7 +569,7 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.rename(columns={"alleles": "allele_list",   "locus": "pos_VCF",    "exorgen": "set"}, errors='raise')
         gnomad_union_df = gnomad_union_df.rename(columns={"start": "pos_start_vep",   "end": "pos_stop_vep"}, errors='raise')
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
-        gnomad_union_df = gnomad_union_df.add_prefix('gnomad_')
+        gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
 
 
         
@@ -844,6 +844,7 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr','pos_VCF','ref','alt' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+        clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
         cols = ['row_type',
         'VCV_ID',
@@ -880,7 +881,7 @@ task merge_clinvar_variants {
         with open(file_name, 'w') as x_file:
             x_file.write(clinvar_variants_count_pd)
         clinvar_complete = clinvar_complete.rename(columns={"ref": "allele_ref",  "alt": "allele_alt",   "start": "pos_start",   "stop": "pos_stop"}, errors='raise')
-        clinvar_complete = clinvar_complete.add_prefix('clinvar_')
+        clinvar_complete = clinvar_complete.add_suffix('_clinvar')
         clinvar_complete.to_csv("clinvar_variants.csv", sep=',', index=False )
 
 
@@ -931,8 +932,8 @@ task merge_variants {
 
         cv_table = pd.read_csv("~{clinvar_var}", sep=',' )
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
-        gnomad_vars = gnomad_vars.rename(columns={"gnomad_txpt_hgvsc": "txpt_hgvsc"}, errors='raise')
-        cv_table = cv_table.rename(columns={"clinvar_txpt_hgvsc": "txpt_hgvsc"}, errors='raise')
+        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_gnomad": "txpt_hgvsc"}, errors='raise')
+        cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "txpt_hgvsc"}, errors='raise')
         combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
 
 
@@ -947,6 +948,7 @@ task merge_variants {
         with open(file_name, 'w') as x_file:
             x_file.write(combined_variants_count_pd)
         combined = combined.set_index('txpt_hgvsc')
+        combined = combined.sort_index(axis=1)
 
         combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
 
