@@ -61,10 +61,10 @@ workflow annotate_functional_variants {
 
 
     output{
-        File combined_var = merge_variants.combined_var
-        String gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
-        String clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
-        String combined_variants_count = merge_variants.combined_variants_count
+        File output_variants_file = merge_variants.combined_var
+        String output_gnomad_variants = get_gnomad_variants.gnomad_variants_count
+        String output_clinvar_variants = merge_clinvar_variants.clinvar_variants_count
+        String output_total_variants = merge_variants.combined_variants_count
     }
 }
 
