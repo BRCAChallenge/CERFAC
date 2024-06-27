@@ -732,7 +732,7 @@ task extract_clinvar_variants_basic {
             -group ClassifiedRecord/SimpleAllele/HGVSlist/HGVS -if NucleotideExpression@MANESelect -equals true \
                  -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type \
             -group ClassifiedRecord/ClinicalAssertionList/ClinicalAssertion   \
-                -def "NA" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" "&KEYSUBNUM" ClinicalAssertion/ClinVarAccession@Accession "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
+                -deq "\n" -def "NA" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" "&KEYSUBNUM" ClinicalAssertion/ClinVarAccession@Accession "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
                 "&KEYVDC"  "&KEYVDLU" ClinicalAssertion@DateCreated ClinicalAssertion@DateLastUpdated ClinicalAssertion@SubmissionDate \
                 "&KEYGREVOV" "&KEYGCLASSOV" Classification/ReviewStatus Classification/GermlineClassification  \
                 "&KEYOREVOV" "&KEYOCLASSOV" Classification/ReviewStatus Classification/OncogenicityClassification \
