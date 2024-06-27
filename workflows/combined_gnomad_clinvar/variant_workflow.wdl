@@ -167,11 +167,10 @@ task get_gnomad_variants {
                                             txpt_biotype = v4exomes.vep.transcript_consequences.biotype,
                                             variant_effect = v4exomes.vep.transcript_consequences.consequence_terms,
                                             txpt_impact = v4exomes.vep.transcript_consequences.impact,
-                                            txpt_variant_allele = v4exomes.vep.transcript_consequences.variant_allele,
                                             VRS_Allele_IDs = v4exomes.info.vrs.VRS_Allele_IDs,
-                                            VRS_States = v4exomes.info.vrs.VRS_States,
-                                            VRS_starts = v4exomes.info.vrs.VRS_Starts,
-                                            VRS_stops = v4exomes.info.vrs.VRS_Ends,
+                                            allele_list_VRS = v4exomes.info.vrs.VRS_States,
+                                            pos_VRS_starts = v4exomes.info.vrs.VRS_Starts,
+                                            pos_VRS_stops = v4exomes.info.vrs.VRS_Ends,
 
                                             txpt_amino_acids = v4exomes.vep.transcript_consequences.amino_acids,
                                             txpt_appris = v4exomes.vep.transcript_consequences.appris,
@@ -202,11 +201,10 @@ task get_gnomad_variants {
                                             v4genomes.vep.seq_region_name, 
                                             v4genomes.vep.variant_class,
                                             v4genomes.in_silico_predictors.spliceai_ds_max,
-                                           txpt_variant_allele = v4genomes.vep.transcript_consequences.variant_allele,
                                             VRS_Allele_IDs = v4genomes.info.vrs.VRS_Allele_IDs,
-                                            VRS_States = v4genomes.info.vrs.VRS_States,
-                                            VRS_starts = v4genomes.info.vrs.VRS_Starts,
-                                            VRS_stops = v4genomes.info.vrs.VRS_Ends,
+                                            allele_list_VRS = v4genomes.info.vrs.VRS_States,
+                                            pos_VRS_starts = v4genomes.info.vrs.VRS_Starts,
+                                            pos_VRS_stops = v4genomes.info.vrs.VRS_Ends,
                                             n_alt_alleles_genomes=   v4genomes.allele_info.n_alt_alleles,
                                             txpt_biotype = v4genomes.vep.transcript_consequences.biotype,
                                             variant_effect = v4genomes.vep.transcript_consequences.consequence_terms,
@@ -507,8 +505,8 @@ task get_gnomad_variants {
         gnomad_union = gnomad_union.annotate(CERFAC_variant_id_VCF=variant_idCERFAC_VCF(gnomad_union.locus, gnomad_union.alleles))
         gnomad_union = gnomad_union.annotate(allele_ref=get_ref_allele(gnomad_union.locus, gnomad_union.alleles))
         gnomad_union = gnomad_union.annotate(allele_alt=get_alt_allele(gnomad_union.locus, gnomad_union.alleles))
-        gnomad_union = gnomad_union.annotate(var_len_ref=get_ref_allele_len(gnomad_union.locus, gnomad_union.alleles))
-        gnomad_union = gnomad_union.annotate(var_len_alt=get_alt_allele_len(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(variant_length_ref=get_ref_allele_len(gnomad_union.locus, gnomad_union.alleles))
+        gnomad_union = gnomad_union.annotate(variant_length_alt=get_alt_allele_len(gnomad_union.locus, gnomad_union.alleles))
 
         gnomad_union_df = gnomad_union.to_pandas()
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
@@ -642,7 +640,7 @@ task extract_clinvar_variants_traitmap {
 
         cat  ~{basicxml} |
         xtract -pattern VariationArchive -def 'NA' -KEYVCV VariationArchive@Accession \
-                -group TraitMapping -deq '\n' -def 'None' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
+                -group TraitMapping -deq '\n' -def 'None given' -lbl 'traitmapping' -element '&KEYVCV' @ClinicalAssertionID @TraitType MedGen@CUI MedGen@Name > ~{GENE_NAME}_traitmapping.txt
 
     >>>
 
@@ -723,7 +721,7 @@ task extract_clinvar_variants_basic {
         set -eux -o pipefail
         cat  ~{basicxml} |
         xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession -KEYCHANGE "(unknown)" -KEYCONS "(unknown)" -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVTYPE VariationArchive@VariationType -KEYSUBNUM VariationArchive@NumberOfSubmissions \
-        -KEYGREVOV "(None)" -KEYGCLASSOV "(None)" -KEYOREVOV "(None)" -KEYOCLASSOV "(None)" -KEYSREVOV "(None)" -KEYSCLASSOV "(None)"\
+        -KEYGREVOV "(None given)" -KEYGCLASSOV "(None given)" -KEYOREVOV "(None given)" -KEYOCLASSOV "(None given)" -KEYSREVOV "(None given)" -KEYSCLASSOV "(None given)"\
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
                 -KEYASM SequenceLocation@Assembly -KEYCHR SequenceLocation@Chr  -KEYSTART SequenceLocation@start -KEYSTOP SequenceLocation@stop -KEYVCF SequenceLocation@positionVCF -KEYREFA SequenceLocation@referenceAlleleVCF -KEYALTA SequenceLocation@alternateAlleleVCF -KEYVLEN SequenceLocation@variantLength \
             -group ClassifiedRecord/Classifications -if GermlineClassification  -KEYGREVOV GermlineClassification/ReviewStatus -KEYGCLASSOV GermlineClassification/Description  \
@@ -732,11 +730,10 @@ task extract_clinvar_variants_basic {
             -group ClassifiedRecord/SimpleAllele/HGVSlist/HGVS -if NucleotideExpression@MANESelect -equals true \
                  -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type \
             -group ClassifiedRecord/ClinicalAssertionList/ClinicalAssertion   \
-                -deq "\n" -def "NA" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" "&KEYSUBNUM" ClinicalAssertion/ClinVarAccession@Accession "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
+                -deq "\n" -def "None given" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" "&KEYSUBNUM" ClinicalAssertion/ClinVarAccession@Accession "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
                 "&KEYVDC"  "&KEYVDLU" ClinicalAssertion@DateCreated ClinicalAssertion@DateLastUpdated ClinicalAssertion@SubmissionDate \
-                "&KEYGREVOV" "&KEYGCLASSOV" Classification/ReviewStatus Classification/GermlineClassification  \
-                "&KEYOREVOV" "&KEYOCLASSOV" Classification/ReviewStatus Classification/OncogenicityClassification \
-                "&KEYSREVOV" "&KEYSCLASSOV" Classification/ReviewStatus Classification/SomaticClinicalImpact \
+                "&KEYGREVOV" "&KEYGCLASSOV" "&KEYOREVOV" "&KEYOCLASSOV" "&KEYSREVOV" "&KEYSCLASSOV" Classification/ReviewStatus Classification/GermlineClassification  \
+                Classification/OncogenicityClassification Classification/SomaticClinicalImpact \
                 "&KEYCONS"   "&KEYCHANGE" \
                 Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment  ClinicalAssertion@ID \
                     -block ObservedInList -def "NA"  \
@@ -785,15 +782,14 @@ task merge_clinvar_variants {
         import pandas as pd
 
         Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
-                                    names =["VCV_ID", "ClinVar_variant_ID", "variant_type","number_submissions", "SCV_ID", 
+                                    names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
                                         "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
                                         "overall_date_created", "VCV_date_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
-                                        "overall_germline_review_status","overall_germline_classification","submission_germline_review_status","submission_germline_classification",
-                                        "overall_onco_review_status","overall_oncogenicity_classification", "submission_onco_review_status","submission_oncogenicity_classification",
-                                        "overall_som_review_status","overall_somatic_classification", "submission_som_review_status","submission_somatic_classification",
+                                        "overall_germline_review_status","overall_germline_classification","overall_onco_review_status","overall_oncogenicity_classification","overall_som_review_status","overall_somatic_classification",
+                                        "submission_review_status","submission_germline_classification", "submission_oncogenicity_classification", "submission_somatic_classification",
                                         "variant_effect","txpt_hgvsc",
                                         "comment",
-                                        "functional_category", "FA_comment",
+                                        "functional_category", "functional_comment",
                                         "CA_ID", "functional_result"] , header=None, keep_default_na=False)
                                 
 
@@ -852,12 +848,12 @@ task merge_clinvar_variants {
         'ClinVar_variant_ID','number_submissions', 'SCV_ID', 
         'start','stop','pos_VCF','ref','alt',
         'variant_length', 'MG_disease_name','ContributesToAggregateClassification',
-        'variant_type', 'variant_effect','txpt_hgvsc', 
-        'overall_germline_review_status','overall_germline_classification','submission_germline_review_status','submission_germline_classification',
-        'overall_onco_review_status','overall_oncogenicity_classification', 'submission_onco_review_status','submission_oncogenicity_classification',
-        'overall_som_review_status','overall_somatic_classification', 'submission_som_review_status','submission_somatic_classification',
+        'variant_class', 'variant_effect','txpt_hgvsc', 
+        'overall_germline_review_status','overall_germline_classification','submission_review_status','submission_germline_classification',
+        'overall_onco_review_status','overall_oncogenicity_classification','submission_oncogenicity_classification',
+        'overall_som_review_status','overall_somatic_classification','submission_somatic_classification',
         'comment',
-        'functional_category','FA_comment','functional_result', 
+        'functional_category','functional_comment','functional_result', 
         'overall_date_created', 'VCV_date_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
 
         clinvar_complete = clinvar_complete[cols]
