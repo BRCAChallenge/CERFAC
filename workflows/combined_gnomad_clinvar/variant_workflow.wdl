@@ -382,6 +382,46 @@ task get_gnomad_variants {
 
 
             return ref_allele
+        def get_VRS_start_ref(pos_VRS_starts: hl.expr.ArrayExpression):
+            """
+            Position ref allele
+            """
+            
+            ref_pos_start = hl.str(pos_VRS_starts[0])
+
+
+
+            return ref_pos_start
+        def get_VRS_start_alt(pos_VRS_starts: hl.expr.ArrayExpression):
+            """
+            Position alt allele
+            """
+            
+            alt_pos_start = hl.str(pos_VRS_starts[1])
+
+
+
+            return alt_pos_start
+        def get_VRS_stop_ref(pos_VRS_stops: hl.expr.ArrayExpression):
+            """
+            Position ref allele
+            """
+            
+            ref_pos_stop = hl.str(pos_VRS_stops[0])
+
+
+
+            return ref_pos_stop
+        def get_VRS_stop_alt(pos_VRS_stops: hl.expr.ArrayExpression):
+            """
+            Position alt allele
+            """
+            
+            alt_pos_stop = hl.str(pos_VRS_stops[1])
+
+
+
+            return alt_pos_stop
 
         def variant_id_dash(locus: hl.expr.LocusExpression, alleles: hl.expr.ArrayExpression, max_length: int = None):
             """
@@ -508,6 +548,12 @@ task get_gnomad_variants {
         gnomad_union = gnomad_union.annotate(variant_length_ref=get_ref_allele_len(gnomad_union.locus, gnomad_union.alleles))
         gnomad_union = gnomad_union.annotate(variant_length_alt=get_alt_allele_len(gnomad_union.locus, gnomad_union.alleles))
 
+        gnomad_union = gnomad_union.annotate(pos_start_alt_vrs=get_VRS_start_alt(gnomad_union.pos_VRS_starts)
+        gnomad_union = gnomad_union.annotate(pos_start_ref_vrs=get_VRS_start_ref(gnomad_union.pos_VRS_starts)
+
+        gnomad_union = gnomad_union.annotate(pos_stop_alt_vrs=get_VRS_stop_alt(gnomad_union.pos_VRS_stops)
+        gnomad_union = gnomad_union.annotate(pos_stop_ref_vrs=get_VRS_stop_ref(gnomad_union.pos_VRS_stops)
+
         gnomad_union_df = gnomad_union.to_pandas()
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 
@@ -547,6 +593,7 @@ task get_gnomad_variants {
         gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
         gnomad_union_df['txpt_hgvsc'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
+        gnomad_union_df['hgvs_pro'] = gnomad_union_df['txpt_hgvsp'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
         gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
@@ -784,7 +831,7 @@ task merge_clinvar_variants {
         Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
                                     names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
                                         "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
-                                        "overall_date_created", "VCV_date_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
+                                        "date_variant_created", "date_variant_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
                                         "overall_germline_review_status","overall_germline_classification","overall_onco_review_status","overall_oncogenicity_classification","overall_som_review_status","overall_somatic_classification",
                                         "submission_review_status","submission_germline_classification", "submission_oncogenicity_classification", "submission_somatic_classification",
                                         "variant_effect","txpt_hgvsc",
@@ -840,8 +887,12 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
+        clinvar_complete['hgvs_pro'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat="(", n=1,  regex=False).str.get(1)
+        clinvar_complete['hgvs_pro'].replace(regex=False,inplace=True,to_replace=r')',value=r'')
+        clinvar_complete['hgvs_pro'].replace(regex=False,inplace=True,to_replace=r' ',value=r'')
 
-        cols = ['VCV_ID','txpt_hgvsc_from_ID',
+
+        cols = ['VCV_ID','txpt_hgvsc_from_ID','hgvs_pro',
         'CERFAC_variant_id_VCF',
         'CERFAC_variant_id_HGVS_long',
         'CERFAC_variant_id_HGVS_short',
@@ -854,7 +905,7 @@ task merge_clinvar_variants {
         'overall_som_review_status','overall_somatic_classification','submission_somatic_classification',
         'comment',
         'functional_category','functional_comment','functional_result', 
-        'overall_date_created', 'VCV_date_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
+        'date_variant_created', 'date_variant_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
 
         clinvar_complete = clinvar_complete[cols]
 
@@ -921,22 +972,22 @@ task merge_variants {
 
         cv_table = pd.read_csv("~{clinvar_var}", sep=',' )
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
-        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_gnomad": "txpt_hgvsc"}, errors='raise')
-        cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "txpt_hgvsc"}, errors='raise')
-        combined = gnomad_vars.set_index('txpt_hgvsc').join(cv_table.set_index('txpt_hgvsc'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
+        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_gnomad": "hgvs_nt"}, errors='raise')
+        cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "hgvs_nt"}, errors='raise')
+        combined = gnomad_vars.set_index('hgvs_nt').join(cv_table.set_index('hgvs_nt'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
 
 
-        combined.sort_values(['txpt_hgvsc'])
+        combined.sort_values(['hgvs_nt'])
         combined = combined.reset_index()
 
 
-        combined_variants_count_pd = str(combined['txpt_hgvsc'].nunique())
+        combined_variants_count_pd = str(combined['hgvs_nt'].nunique())
 
 
         file_name = "combinedcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(combined_variants_count_pd)
-        combined = combined.set_index('txpt_hgvsc')
+        combined = combined.set_index('hgvs_nt')
         combined = combined.sort_index(axis=1)
 
         combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
