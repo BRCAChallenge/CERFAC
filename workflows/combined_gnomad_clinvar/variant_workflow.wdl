@@ -721,28 +721,22 @@ task extract_clinvar_variants_basic {
 
     command <<<
         set -eux -o pipefail
-
         cat  ~{basicxml} |
-        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession -KEYCHANGE "(unknown)" -KEYCONS "(unknown)" -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVMRS VariationArchive@MostRecentSubmission -KEYVTYPE VariationArchive@VariationType -lbl "VCV" -element VariationArchive@Accession VariationArchive@VariationName VariationArchive@VariationType VariationArchive@NumberOfSubmissions VariationArchive@Version \
+        xtract -pattern VariationArchive -def "NA" -KEYVCV VariationArchive@Accession -KEYCHANGE "(unknown)" -KEYCONS "(unknown)" -KEYVNAME VariationArchive@VariationName -KEYVDC VariationArchive@DateCreated -KEYVDLU VariationArchive@DateLastUpdated -KEYVTYPE VariationArchive@VariationType -KEYSUBNUM VariationArchive@NumberOfSubmissions \
+        -KEYGREVOV "(None)" -KEYGCLASSOV "(None)" -KEYOREVOV "(None)" -KEYOCLASSOV "(None)" -KEYSREVOV "(None)" -KEYSCLASSOV "(None)"\
             -group ClassifiedRecord/SimpleAllele/Location/SequenceLocation  -if SequenceLocation@forDisplay -equals true -def "NA" \
                 -KEYASM SequenceLocation@Assembly -KEYCHR SequenceLocation@Chr  -KEYSTART SequenceLocation@start -KEYSTOP SequenceLocation@stop -KEYVCF SequenceLocation@positionVCF -KEYREFA SequenceLocation@referenceAlleleVCF -KEYALTA SequenceLocation@alternateAlleleVCF -KEYVLEN SequenceLocation@variantLength \
-                -element SequenceLocation@Assembly SequenceLocation@Chr SequenceLocation@start SequenceLocation@stop SequenceLocation@positionVCF SequenceLocation@referenceAlleleVCF SequenceLocation@alternateAlleleVCF SequenceLocation@variantLength \
-            -group ClassifiedRecord/SimpleAllele -element "&KEYVDC"  "&KEYVDLU"  "&KEYVMRS"  \
-            -group ClassifiedRecord/Classifications -if GermlineClassification -def "NA" -element GermlineClassification/ReviewStatus GermlineClassification/Description  \
-                    -else -lbl "NA\tNA" \
-            -group ClassifiedRecord/Classifications -if OncogenicityClassification -def "NA" -element OncogenicityClassification/ReviewStatus OncogenicityClassification/Description  \
-                    -else -lbl "NA\tNA" \
-            -group ClassifiedRecord/Classifications -if SomaticClinicalImpact -def "NA" -element SomaticClinicalImpact/ReviewStatus SomaticClinicalImpact/Description  \
-                    -else -lbl "NA\tNA" \
+            -group ClassifiedRecord/Classifications -if GermlineClassification  -KEYGREVOV GermlineClassification/ReviewStatus -KEYGCLASSOV GermlineClassification/Description  \
+            -group ClassifiedRecord/Classifications -if OncogenicityClassification  -KEYOREVOV OncogenicityClassification/ReviewStatus -KEYOCLASSOV OncogenicityClassification/Description  \
+            -group ClassifiedRecord/Classifications -if SomaticClinicalImpact  -KEYSREVOV SomaticClinicalImpact/ReviewStatus -KEYSCLASSOV SomaticClinicalImpact/Description  \
             -group ClassifiedRecord/SimpleAllele/HGVSlist/HGVS -if NucleotideExpression@MANESelect -equals true \
-                -def "NA" -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type \
-            -group ClassifiedRecord/SimpleAllele -element "&KEYCONS"  "&KEYCHANGE"  \
+                 -KEYCHANGE NucleotideExpression@change  -KEYCONS -first MolecularConsequence@Type \
             -group ClassifiedRecord/ClinicalAssertionList/ClinicalAssertion   \
-                -deq "\n" -def "NA" -lbl "SCV" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" ClinicalAssertion/ClinVarAccession@Accession ClinicalAssertion/ClinVarAccession@Version "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
-                ClinicalAssertion@DateCreated ClinicalAssertion@DateLastUpdated ClinicalAssertion@SubmissionDate \
-                Classification/ReviewStatus Classification/GermlineClassification  \
-                Classification/ReviewStatus Classification/OncogenicityClassification \
-                Classification/ReviewStatus Classification/SomaticClinicalImpact \
+                -def "NA" -element "&KEYVCV" "&KEYVNAME" "&KEYVTYPE" "&KEYSUBNUM" ClinicalAssertion/ClinVarAccession@Accession "&KEYASM" "&KEYCHR" "&KEYSTART" "&KEYSTOP" "&KEYVCF" "&KEYREFA" "&KEYALTA" "&KEYVLEN" \
+                "&KEYVDC"  "&KEYVDLU" ClinicalAssertion@DateCreated ClinicalAssertion@DateLastUpdated ClinicalAssertion@SubmissionDate \
+                "&KEYGREVOV" "&KEYGCLASSOV" Classification/ReviewStatus Classification/GermlineClassification  \
+                "&KEYOREVOV" "&KEYOCLASSOV" Classification/ReviewStatus Classification/OncogenicityClassification \
+                "&KEYSREVOV" "&KEYSCLASSOV" Classification/ReviewStatus Classification/SomaticClinicalImpact \
                 "&KEYCONS"   "&KEYCHANGE" \
                 Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment  ClinicalAssertion@ID \
                     -block ObservedInList -def "NA"  \
@@ -791,12 +785,12 @@ task merge_clinvar_variants {
         import pandas as pd
 
         Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
-                                    names =["row_type", "VCV_ID", "ClinVar_variant_ID", "variant_type","submissions", "version", 
+                                    names =["VCV_ID", "ClinVar_variant_ID", "variant_type","number_submissions", "SCV_ID", 
                                         "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
-                                        "date_created", "date_updated",  "date_submitted", 
-                                        "review_status","germline_classification",
-                                        "onco_review_status","oncogenicity_classification",
-                                        "som_review_status","somatic_classification",
+                                        "overall_date_created", "VCV_date_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
+                                        "overall_germline_review_status","overall_germline_classification","submission_germline_review_status","submission_germline_classification",
+                                        "overall_onco_review_status","overall_oncogenicity_classification", "submission_onco_review_status","submission_oncogenicity_classification",
+                                        "overall_som_review_status","overall_somatic_classification", "submission_som_review_status","submission_somatic_classification",
                                         "variant_effect","txpt_hgvsc",
                                         "comment",
                                         "functional_category", "FA_comment",
@@ -846,26 +840,20 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
-        cols = ['row_type',
-        'VCV_ID',
+        cols = ['VCV_ID','txpt_hgvsc_from_ID',
         'CERFAC_variant_id_VCF',
         'CERFAC_variant_id_HGVS_long',
         'CERFAC_variant_id_HGVS_short',
-        'ClinVar_variant_ID','submissions',
-        #'assembly','Chr',
+        'ClinVar_variant_ID','number_submissions', 'SCV_ID', 
         'start','stop','pos_VCF','ref','alt',
         'variant_length', 'MG_disease_name','ContributesToAggregateClassification',
-        'variant_type', 'variant_effect','txpt_hgvsc', 'review_status',
-        'germline_classification', 'oncogenicity_classification',
-        'somatic_classification',
+        'variant_type', 'variant_effect','txpt_hgvsc', 
+        'overall_germline_review_status','overall_germline_classification','submission_germline_review_status','submission_germline_classification',
+        'overall_onco_review_status','overall_oncogenicity_classification', 'submission_onco_review_status','submission_oncogenicity_classification',
+        'overall_som_review_status','overall_somatic_classification', 'submission_som_review_status','submission_somatic_classification',
         'comment',
-        'functional_category',
-        'FA_comment',
-        'functional_result',
-        'date_created',
-        'date_updated',
-        'date_submitted',
-        'version']
+        'functional_category','FA_comment','functional_result', 
+        'overall_date_created', 'VCV_date_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
 
         clinvar_complete = clinvar_complete[cols]
 
