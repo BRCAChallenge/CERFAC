@@ -382,7 +382,7 @@ task get_gnomad_variants {
 
 
             return ref_allele
-        def get_VRS_start_ref(pos_VRS_starts: hl.expr.ArrayExpression):
+        def get_VRS_start_ref(pos_VRS_starts: hl.expr.ArrayNumericExpression):
             """
             Position ref allele
             """
@@ -392,7 +392,7 @@ task get_gnomad_variants {
 
 
             return ref_pos_start
-        def get_VRS_start_alt(pos_VRS_starts: hl.expr.ArrayExpression):
+        def get_VRS_start_alt(locus: hl.expr.LocusExpression, pos_VRS_starts: hl.expr.ArrayNumericExpression):
             """
             Position alt allele
             """
@@ -402,7 +402,7 @@ task get_gnomad_variants {
 
 
             return alt_pos_start
-        def get_VRS_stop_ref(pos_VRS_stops: hl.expr.ArrayExpression):
+        def get_VRS_stop_ref(pos_VRS_stops: hl.expr.ArrayNumericExpression):
             """
             Position ref allele
             """
@@ -412,7 +412,7 @@ task get_gnomad_variants {
 
 
             return ref_pos_stop
-        def get_VRS_stop_alt(pos_VRS_stops: hl.expr.ArrayExpression):
+        def get_VRS_stop_alt(pos_VRS_stops: hl.expr.ArrayNumericExpression):
             """
             Position alt allele
             """
@@ -548,7 +548,7 @@ task get_gnomad_variants {
         gnomad_union = gnomad_union.annotate(variant_length_ref=get_ref_allele_len(gnomad_union.locus, gnomad_union.alleles))
         gnomad_union = gnomad_union.annotate(variant_length_alt=get_alt_allele_len(gnomad_union.locus, gnomad_union.alleles))
 
-        gnomad_union = gnomad_union.annotate(pos_start_alt_vrs=get_VRS_start_alt(gnomad_union.pos_VRS_starts)
+        gnomad_union = gnomad_union.annotate(pos_start_alt_vrs=get_VRS_start_alt(gnomad_union.locus, gnomad_union.pos_VRS_starts)
         gnomad_union = gnomad_union.annotate(pos_start_ref_vrs=get_VRS_start_ref(gnomad_union.pos_VRS_starts)
 
         gnomad_union = gnomad_union.annotate(pos_stop_alt_vrs=get_VRS_stop_alt(gnomad_union.pos_VRS_stops)
