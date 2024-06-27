@@ -795,6 +795,7 @@ task merge_clinvar_variants {
                                         "comment",
                                         "functional_category", "FA_comment",
                                         "CA_ID", "functional_result"] , header=None, keep_default_na=False)
+                                
 
         trait_set = pd.read_csv("~{traitset}", delimiter="\t", 
                             names = ["VCV_ID", "TraitSet_ID","TS_Type" , "Trait_ID","Trait_Type",  "ContributesToAggregateClassification","MG_ID" ] )
@@ -832,6 +833,10 @@ task merge_clinvar_variants {
         trait_comb['TS_Type'] = trait_comb['TS_Type'].fillna("none")
         trait_comb = trait_comb[trait_comb.CA_ID != "none"]
         trait_comb = trait_comb.drop(trait_comb[(trait_comb['TraitSet_ID'] == "none") & (trait_comb['Trait_Type_y'] == "Finding")].index)
+
+        Gene_CV_basic['CA_ID'] = Gene_CV_basic['CA_ID'].fillna("none")
+        Gene_CV_basic[['CA_ID' ]] = Gene_CV_basic[['CA_ID' ]].astype('str')
+        trait_comb[['CA_ID' ]] = trait_comb[['CA_ID' ]].astype('str')
 
         clinvar_complete = pd.merge(Gene_CV_basic, trait_comb, how='outer', on=["VCV_ID", "CA_ID"])
         clinvar_complete['Chr'] = 'chr' + clinvar_complete['Chr'].astype(str)
