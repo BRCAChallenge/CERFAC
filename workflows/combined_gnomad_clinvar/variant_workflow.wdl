@@ -746,7 +746,7 @@ task extract_clinvar_variants_traitset {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 3
         preemptible: 1
     }
 }
@@ -803,7 +803,7 @@ task extract_clinvar_variants_basic {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 3
         preemptible: 1
     }
 }
@@ -939,7 +939,7 @@ task merge_clinvar_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 3
         preemptible: 1
     }
 }
@@ -1008,7 +1008,7 @@ task merge_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 3
         preemptible: 1
     }
 }
