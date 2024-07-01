@@ -121,7 +121,7 @@ task extract_gene_loc {
 
 task get_gnomad_variants {
     input {
-        Int memSizeGB = 10
+        Int memSizeGB = 12
         Int threadCount = 1
         Int diskSizeGB = 20
         String GENE_NAME
@@ -637,7 +637,7 @@ task get_gnomad_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
-        maxRetries: 3
+        maxRetries: 5
         preemptible: 1
     }
 }
