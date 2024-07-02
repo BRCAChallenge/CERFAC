@@ -65,6 +65,7 @@ workflow annotate_functional_variants {
         String output_gnomad_variants = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants = merge_variants.combined_variants_count
+        Int output_gene_length = extract_gene_loc.GENE_LENGTH
     }
 }
 
@@ -108,6 +109,7 @@ task extract_gene_loc {
         String CHR_ID = read_string("CHR_ID")
         Int GENE_START_LOCUS = read_int("GENE_START_LOCUS")
         Int GENE_END_LOCUS = read_int("GENE_END_LOCUS")
+        Int GENE_LENGTH = GENE_END_LOCUS - GENE_START_LOCUS
         }
     runtime {
         memory: memSizeGB + " GB"

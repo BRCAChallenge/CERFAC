@@ -10,6 +10,9 @@ import gnomad
 # Hail-specific packages
 import hail as hl
 
+#check if this method is faster
+#https://discuss.hail.is/t/querying-gnomad-using-hail-table-by-gene-symbol/1452
+
 
 parser = argparse.ArgumentParser(description='Get gnomad variants.')
 parser.add_argument('-g', help='gene name', required=True)
@@ -373,8 +376,8 @@ def var_type_gnomad( alleles: hl.expr.ArrayExpression):
 
 
 v4genomes_varid_sm = v4genomes_varid_sm.annotate(ref_genome=get_ref_genome(v4genomes_varid_sm.locus))
-
-
+#check if this method is faster
+#https://discuss.hail.is/t/querying-gnomad-using-hail-table-by-gene-symbol/1452
 chr_string = "chr" + args.c
 filtered_v4exomes = v4exomes_varid_sm.filter(v4exomes_varid_sm.locus.contig == chr_string )
 filtered_v4genomes = v4genomes_varid_sm.filter(v4genomes_varid_sm.locus.contig == chr_string )
