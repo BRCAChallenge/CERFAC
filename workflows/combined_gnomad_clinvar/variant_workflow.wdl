@@ -134,6 +134,7 @@ task get_gnomad_variants {
 
     command <<<
         set -eux -o pipefail
+        
 
         python3 <<CODE
 
@@ -146,6 +147,8 @@ task get_gnomad_variants {
 
         import gnomad
         import hail as hl
+        hl.init(spark_conf={'spark.driver.memory': '~{memSizeGB}g'})
+
 
         start_pos =hl.int32("~{GENE_START_LOCUS}")
         stop_pos =hl.int32("~{GENE_END_LOCUS}")
@@ -556,7 +559,7 @@ task get_gnomad_variants {
         gnomad_union = gnomad_union.annotate(pos_stop_alt_vrs=get_VRS_stop_alt(gnomad_union.pos_VRS_stops))
         gnomad_union = gnomad_union.annotate(pos_stop_ref_vrs=get_VRS_stop_ref(gnomad_union.pos_VRS_stops))
 
-        gnomad_union_df = gnomad_union.to_pandas()
+        gnomad_union_df = gnomad_union.to_pandas(flatten=True)
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
 
         badcols = [
@@ -889,9 +892,9 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
-        clinvar_complete['hgvs_pro'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat="(", n=1,  regex=False).str.get(1)
-        clinvar_complete['hgvs_pro'].replace(regex=False,inplace=True,to_replace=r')',value=r'')
-        clinvar_complete['hgvs_pro'].replace(regex=False,inplace=True,to_replace=r' ',value=r'')
+        clinvar_complete['hgvs_pro'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=" ", n=1,  regex=False).str.get(1)
+        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace=')', value='')
+        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace='(', value='')
 
 
         cols = ['VCV_ID','txpt_hgvsc_from_ID','hgvs_pro',
