@@ -642,7 +642,7 @@ task get_gnomad_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
-        maxRetries: 7
+        maxRetries: 3
         preemptible: 1
     }
 }
