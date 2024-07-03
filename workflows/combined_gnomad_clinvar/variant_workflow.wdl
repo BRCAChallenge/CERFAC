@@ -123,8 +123,7 @@ task extract_gene_loc {
 
 task get_gnomad_variants {
     input {
-        Int memSizeGB = 15
-        Int MEM_SIZE = ~{memSizeGB}
+        Int MEM_SIZE = 15
         String MEM_UNIT = "GB"
         Int threadCount = 1
         Int diskSizeGB = 25
@@ -641,7 +640,7 @@ task get_gnomad_variants {
     }
 
     runtime {
-        memory: memSizeGB + " GB"
+        memory: MEM_SIZE + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
