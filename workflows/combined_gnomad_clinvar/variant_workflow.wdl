@@ -124,8 +124,10 @@ task extract_gene_loc {
 task get_gnomad_variants {
     input {
         Int memSizeGB = 15
+        Int MEM_SIZE = ~{memSizeGB}
+        String MEM_UNIT = "GB"
         Int threadCount = 1
-        Int diskSizeGB = 20
+        Int diskSizeGB = 25
         String GENE_NAME
         String CHR_ID
         Int GENE_START_LOCUS
@@ -134,7 +136,8 @@ task get_gnomad_variants {
 
     command <<<
         set -eux -o pipefail
-        
+        echo "MEM_SIZE=$MEM_SIZE" >&2
+        echo "MEM_UNIT=$MEM_UNIT" >&2
 
         python3 <<CODE
 
@@ -147,9 +150,9 @@ task get_gnomad_variants {
 
         import gnomad
         import hail as hl
-        hl.init(spark_conf={'spark.driver.memory': '~{memSizeGB}g'})
+        hl.init(spark_conf={'spark.driver.memory': '~{MEM_SIZE}g'})
 
-
+        
         start_pos =hl.int32("~{GENE_START_LOCUS}")
         stop_pos =hl.int32("~{GENE_END_LOCUS}")
 
@@ -823,7 +826,7 @@ task merge_clinvar_variants {
         File basiccv  
         File traitmap
         File traitset
-        Int diskSizeGB = 5*round(size(basiccv, "GB") + size(traitmap, 'GB') + size(traitset, 'GB')) + 2
+        Int diskSizeGB = 5*round(size(basiccv, "GB") + size(traitmap, 'GB') + size(traitset, 'GB')) + 5
 
     }
 
