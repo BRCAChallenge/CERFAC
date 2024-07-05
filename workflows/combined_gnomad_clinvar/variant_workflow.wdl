@@ -133,10 +133,11 @@ task get_gnomad_variants {
     }
 
     command <<<
-        set -eux -o pipefail
+        set -ex -o pipefail
         echo "MEM_SIZE=$MEM_SIZE" >&2
         echo "MEM_UNIT=$MEM_UNIT" >&2
         MEMORYSTRING="${MEMSIZE:q}g"
+        echo "MEMORYSTRING='${MEMSIZE:q}g' " >&2
         export MEMORYSTRING
 
         python3 <<CODE
