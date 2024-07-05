@@ -136,6 +136,8 @@ task get_gnomad_variants {
         set -eux -o pipefail
         echo "MEM_SIZE=$MEM_SIZE" >&2
         echo "MEM_UNIT=$MEM_UNIT" >&2
+        MEMORYSTRING="${MEMSIZE:q}g"
+        export MEMORYSTRING
 
         python3 <<CODE
 
@@ -148,8 +150,9 @@ task get_gnomad_variants {
 
         import gnomad
         import hail as hl
-        MEMORYSTRING = "$MEM_SIZE" + "g"
-        hl.init(spark_conf={'spark.driver.memory': $MEMORYSTRING})
+        pyvarmem = os.environ["MEMORYSTRING"]
+        
+        hl.init(spark_conf={'spark.driver.memory': pyvarmem})
 
         
         start_pos =hl.int32("~{GENE_START_LOCUS}")
