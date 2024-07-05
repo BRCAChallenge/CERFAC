@@ -15,7 +15,7 @@ RUN pip install psycopg2-binary
 RUN pip3 install pandas
 RUN pip3 --no-cache-dir install gnomad==0.8.0
 ENV HOME /home/$USER
-ENV PYSPARK_SUBMIT_ARGS="--driver-memory 8g --executor-memory 8g pyspark-shell"
+
 
 WORKDIR $HOME
 CMD [".", "/bin/bash"]
