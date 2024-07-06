@@ -150,7 +150,7 @@ task get_gnomad_variants {
         import gnomad
         import hail as hl
         
-        hl.init(spark_conf={'spark.driver.memory': "~{memSizeGB}"})
+        hl.init(spark_conf={'spark.driver.memory': "~{memSizeGB}g"})
 
         
         start_pos =hl.int32("~{GENE_START_LOCUS}")
