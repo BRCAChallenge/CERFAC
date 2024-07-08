@@ -126,7 +126,7 @@ task get_gnomad_variants {
         Int memSizeGB = 15
         Int threadCount = 1
         Int diskSizeGB = 25
-        Int hailMemSizeGB = floor(0.9*size(memSizeGB, "GB"))
+        Int hailMemSizeGB = floor(0.9*memSizeGB)
         String GENE_NAME
         String CHR_ID
         Int GENE_START_LOCUS
