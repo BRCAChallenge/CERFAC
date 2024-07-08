@@ -126,6 +126,7 @@ task get_gnomad_variants {
         Int memSizeGB = 15
         Int threadCount = 1
         Int diskSizeGB = 25
+        Int hailMemSizeGB = floor(0.9*memSizeGB)
         String GENE_NAME
         String CHR_ID
         Int GENE_START_LOCUS
@@ -150,7 +151,8 @@ task get_gnomad_variants {
         import gnomad
         import hail as hl
         
-        hl.init(spark_conf={'spark.driver.memory': "~{memSizeGB}g"})
+        hl.init(spark_conf={'spark.driver.memory': "~{hailMemSizeGB}g"})
+
 
         
         start_pos =hl.int32("~{GENE_START_LOCUS}")
@@ -645,7 +647,7 @@ task get_gnomad_variants {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
-        maxRetries: 3
+        maxRetries: 0
         preemptible: 1
     }
 }
