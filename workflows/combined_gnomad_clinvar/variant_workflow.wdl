@@ -24,6 +24,7 @@ workflow annotate_functional_variants {
         input: 
             GENE_NAME=GENE_NAME, 
             CHR_ID=extract_gene_loc.CHR_ID, 
+            GENE_LENGTH=extract_gene_loc.GENE_LENGTH, 
             GENE_START_LOCUS=extract_gene_loc.GENE_START_LOCUS, 
             GENE_END_LOCUS=extract_gene_loc.GENE_END_LOCUS
 
@@ -123,15 +124,23 @@ task extract_gene_loc {
 
 task get_gnomad_variants {
     input {
-        Int memSizeGB = 15
+        Int memSizeGBbase = 15
         Int threadCount = 1
-        Int diskSizeGB = 25
-        Int hailMemSizeGB = floor((0.7*memSizeGB)-2)
+        Int diskSizeGBbase = 25
         String GENE_NAME
         String CHR_ID
         Int GENE_START_LOCUS
         Int GENE_END_LOCUS
+        Int GENE_LENGTH
     }
+    #private declaration here I guess
+    Int overmilModifier = if GENE_LENGTH >= 1000000 then "30" else "0"
+    Int overtwomilModifier = if GENE_LENGTH >= 2000000 then "30" else "0"
+
+    Int memory_calc = memSizeGBbase + overmilModifier + overtwomilModifier
+    Int hailMemSizeGB = floor((0.7* memory_calc )-2)
+    Int diskSizeGB = diskSizeGBbase + overmilModifier + overtwomilModifier + 10
+
 
     command <<<
         set -ex -o pipefail
@@ -639,11 +648,10 @@ task get_gnomad_variants {
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
         String gnomad_variants_count = read_string("gnomadcount.txt")
-
     }
 
     runtime {
-        memory: memSizeGB + " GB"
+        memory: memory_calc + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:gnomad"
