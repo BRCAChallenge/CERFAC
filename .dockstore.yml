@@ -1,12 +1,12 @@
     version: 1.2
     workflows:
-  	- name: getVariants
+  	- name: annotate_functional_variants
 	  subclass:  WDL
           primaryDescriptorPath: /workflows/combined_gnomad_clinvar/variant_workflow.wdl
           authors:
               - name: Allison Cheney
                 email: archeney@ucsc.edu
-        - name: addClinicalData   
+        - name: merge_clinical_data
           subclass:  WDL
           primaryDescriptorPath: /workflows/MergeVarsWorkflow/merge_clinical_data.wdl
           authors:

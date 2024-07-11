@@ -906,8 +906,8 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
         clinvar_complete['hgvs_pro'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=" ", n=1,  regex=False).str.get(1)
-        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace=')', value='')
-        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace='(', value='')
+        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace=r')', value='')
+        clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=False, to_replace=r'(', value='')
 
 
         cols = ['VCV_ID','txpt_hgvsc_from_ID','hgvs_pro',
