@@ -138,7 +138,7 @@ task get_gnomad_variants {
     Int overtwomilModifier = if GENE_LENGTH >= 2000000 then "30" else "0"
 
     Int memory_calc = memSizeGBbase + overmilModifier + overtwomilModifier
-    Int hailMemSizeGB = floor((0.7* memory_calc )-2)
+    Int hailMemSizeGB = floor((0.8* memory_calc )-2)
     Int diskSizeGB = diskSizeGBbase + overmilModifier + overtwomilModifier + 10
 
 
