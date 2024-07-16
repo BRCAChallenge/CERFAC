@@ -801,8 +801,8 @@ task extract_clinvar_variants_basic {
                 Classification/OncogenicityClassification Classification/SomaticClinicalImpact \
                 "&KEYCONS"   "&KEYCHANGE" \
                 Classification/Comment FunctionalConsequence@Value FunctionalConsequence/Comment  ClinicalAssertion@ID \
-                    -block ObservedInList -def "NA"  \
-                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute |
+                    -block ObservedInList -def "None given"  \
+                        -subset ObservedIn/Method -if ObsMethodAttribute/Attribute@Type -equals MethodResult -first ObsMethodAttribute/Attribute  |
         sed "s/&gt;/>/g" |
         sed "s/&lt;/</g" | 
         sed "s/â€™/'/g" | 
@@ -845,6 +845,7 @@ task merge_clinvar_variants {
 
         python3 <<CODE
         import pandas as pd
+        zeroto35=list(range(0,36))
 
         Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
                                     names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
@@ -855,7 +856,7 @@ task merge_clinvar_variants {
                                         "variant_effect","txpt_hgvsc",
                                         "comment",
                                         "functional_category", "functional_comment",
-                                        "CA_ID", "functional_result"] , header=None, keep_default_na=False)
+                                        "CA_ID", "functional_result"] , usecols=zeroto35, header=None, keep_default_na=False)
                                 
 
         trait_set = pd.read_csv("~{traitset}", delimiter="\t", 
@@ -922,7 +923,7 @@ task merge_clinvar_variants {
         'overall_onco_review_status','overall_oncogenicity_classification','submission_oncogenicity_classification',
         'overall_som_review_status','overall_somatic_classification','submission_somatic_classification',
         'comment',
-        'functional_category','functional_comment','functional_result', 
+        'functional_category','functional_comment','functional_result',  'functional_description',
         'date_variant_created', 'date_variant_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
 
         clinvar_complete = clinvar_complete[cols]

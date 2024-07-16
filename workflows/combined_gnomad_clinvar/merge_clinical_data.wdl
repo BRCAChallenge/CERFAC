@@ -33,7 +33,7 @@ workflow merge_clinical_data {
 
 
     output{
-        File output_variants_file = merge_variants_clinical.var_clinical_complete    }
+        File output_clinical_file = merge_variants_clinical.var_clinical_complete    }
 }
 
 
