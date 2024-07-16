@@ -923,7 +923,7 @@ task merge_clinvar_variants {
         'overall_onco_review_status','overall_oncogenicity_classification','submission_oncogenicity_classification',
         'overall_som_review_status','overall_somatic_classification','submission_somatic_classification',
         'comment',
-        'functional_category','functional_comment','functional_result',  'functional_description',
+        'functional_category','functional_comment','functional_result', 
         'date_variant_created', 'date_variant_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
 
         clinvar_complete = clinvar_complete[cols]
