@@ -846,7 +846,6 @@ task merge_clinvar_variants {
 
         python3 <<CODE
         import pandas as pd
-        zeroto34=list(range(0,35))
 
         Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", engine='python',
                                     names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
@@ -857,7 +856,9 @@ task merge_clinvar_variants {
                                         "variant_effect","txpt_hgvsc",
                                         "comment",
                                         "functional_category", "functional_comment",
-                                        "CA_ID", "functional_result", "extra1", "extra2"] ,  usecols=zeroto34, header=None, keep_default_na=False)
+                                        "CA_ID", "functional_result", "extra1", "extra2"] ,   header=None, keep_default_na=False)
+        Gene_CV_basic.iloc[:, 0:35]
+
                                 
 
         trait_set = pd.read_csv("~{traitset}", delimiter="\t", 
