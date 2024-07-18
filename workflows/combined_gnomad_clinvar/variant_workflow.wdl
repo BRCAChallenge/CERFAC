@@ -586,6 +586,7 @@ task get_gnomad_variants {
             'txpt_protein_start', 'txpt_transcript_id', 'txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_canonical == 1]
+        gnomad_union_df = gnomad_union_df.dropna(subset=['txpt_gene_symbol'])
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == "~{GENE_NAME}"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
@@ -845,9 +846,9 @@ task merge_clinvar_variants {
 
         python3 <<CODE
         import pandas as pd
-        zeroto35=list(range(0,36))
+        zeroto34=list(range(0,35))
 
-        Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", usecols=zeroto35,
+        Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
                                     names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
                                         "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
                                         "date_variant_created", "date_variant_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
@@ -856,7 +857,7 @@ task merge_clinvar_variants {
                                         "variant_effect","txpt_hgvsc",
                                         "comment",
                                         "functional_category", "functional_comment",
-                                        "CA_ID", "functional_result"] ,  header=None, keep_default_na=False)
+                                        "CA_ID", "functional_result", "extra1", "extra2"] ,  usecols=zeroto34, header=None, keep_default_na=False)
                                 
 
         trait_set = pd.read_csv("~{traitset}", delimiter="\t", 
