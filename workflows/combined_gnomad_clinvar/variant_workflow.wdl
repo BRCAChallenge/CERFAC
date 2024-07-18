@@ -848,7 +848,7 @@ task merge_clinvar_variants {
         import pandas as pd
         zeroto34=list(range(0,35))
 
-        Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", 
+        Gene_CV_basic = pd.read_csv("~{basiccv}", delimiter="\t", engine='python',
                                     names =["VCV_ID", "ClinVar_variant_ID", "variant_class","number_submissions", "SCV_ID", 
                                         "assembly", "Chr", "start", "stop",  "pos_VCF", "ref", "alt","variant_length",  
                                         "date_variant_created", "date_variant_updated",  "date_submission_created", "date_submission_updated","date_submitted", 
