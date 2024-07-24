@@ -135,7 +135,7 @@ task get_gnomad_variants {
     }
     #private declaration here I guess
     Int overmilModifier = if GENE_LENGTH >= 1000000 then "30" else "0"
-    Int overtwomilModifier = if GENE_LENGTH >= 2000000 then "45" else "0"
+    Int overtwomilModifier = if GENE_LENGTH >= 2000000 then "30" else "0"
 
     Int memory_calc = memSizeGBbase + overmilModifier + overtwomilModifier
     Int hailMemSizeGB = floor((0.8* memory_calc )-2)
@@ -634,7 +634,6 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.rename(columns={"alleles": "allele_list",   "locus": "pos_VCF",    "exorgen": "set"}, errors='raise')
         gnomad_union_df = gnomad_union_df.rename(columns={"start": "pos_start_vep",   "end": "pos_stop_vep"}, errors='raise')
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
-        gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
 
 
@@ -943,7 +942,6 @@ task merge_clinvar_variants {
         with open(file_name, 'w') as x_file:
             x_file.write(clinvar_variants_count_pd)
         clinvar_complete = clinvar_complete.rename(columns={"ref": "allele_ref",  "alt": "allele_alt",   "start": "pos_start",   "stop": "pos_stop"}, errors='raise')
-        clinvar_complete['variant_source']="ClinVar"
         clinvar_complete = clinvar_complete.add_suffix('_clinvar')
         clinvar_complete.to_csv("clinvar_variants.csv", sep=',', index=False )
 
@@ -1012,21 +1010,6 @@ task merge_variants {
             x_file.write(combined_variants_count_pd)
         combined = combined.set_index('hgvs_nt')
         combined = combined.sort_index(axis=1)
-        combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
-        combined.variant_source.replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVar="ClinVar only", gnomAD="gnomAD only"), inplace=True)
-        rearrcols = ['hgvs_nt',   'variant_source',      'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
-        'overall_oncogenicity_classification_clinvar','submission_oncogenicity_classification_clinvar',
-        'overall_somatic_classification_clinvar','submission_somatic_classification_clinvar',
-        'functional_category_clinvar','functional_comment_clinvar','functional_result_clinvar',
-        'variant_class_clinvar', 'variant_effect_clinvar','MG_disease_name_clinvar','ContributesToAggregateClassification_clinvar',
-        'comment_clinvar',
-        'VCV_ID_clinvar',
-        'ClinVar_variant_ID_clinvar','number_submissions_clinvar', 'SCV_ID_clinvar']
-        combined = combined[rearrcols + [c for c in combined.columns if c not in rearrcols]]
-
-
-
-
 
         combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
 
