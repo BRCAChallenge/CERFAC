@@ -1013,7 +1013,7 @@ task merge_variants {
         combined = combined.set_index('hgvs_nt')
         combined = combined.sort_index(axis=1)
         combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
-        combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVar="ClinVar only", gnomAD="gnomAD only"))
+        combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVarnan="ClinVar only", gnomADnan="gnomAD only"))
 
         rearrcols = [  'variant_source',      'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
         'overall_oncogenicity_classification_clinvar','submission_oncogenicity_classification_clinvar',
