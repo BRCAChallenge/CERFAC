@@ -1013,8 +1013,9 @@ task merge_variants {
         combined = combined.set_index('hgvs_nt')
         combined = combined.sort_index(axis=1)
         combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
-        combined.variant_source.replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVar="ClinVar only", gnomAD="gnomAD only"), inplace=True)
-        rearrcols = ['hgvs_nt',   'variant_source',      'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
+        combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVar="ClinVar only", gnomAD="gnomAD only"))
+
+        rearrcols = [  'variant_source',      'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
         'overall_oncogenicity_classification_clinvar','submission_oncogenicity_classification_clinvar',
         'overall_somatic_classification_clinvar','submission_somatic_classification_clinvar',
         'functional_category_clinvar','functional_comment_clinvar','functional_result_clinvar',
@@ -1022,6 +1023,7 @@ task merge_variants {
         'comment_clinvar',
         'VCV_ID_clinvar',
         'ClinVar_variant_ID_clinvar','number_submissions_clinvar', 'SCV_ID_clinvar']
+
         combined = combined[rearrcols + [c for c in combined.columns if c not in rearrcols]]
 
 

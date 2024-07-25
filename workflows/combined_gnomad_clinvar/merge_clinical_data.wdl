@@ -45,7 +45,7 @@ task merge_variants_clinical {
         File VARIANTS_FILE
         File FUNCTIONAL_SCORES
         File CLINICAL_DATA
-        Int memSizeGB = 6
+        Int memSizeGB = 2*round(size(VARIANTS_FILE, "GB") + size(FUNCTIONAL_SCORES, 'GB') + size(CLINICAL_DATA, 'GB')) + 1
         Int threadCount = 1
         Int diskSizeGB = 3*round(size(VARIANTS_FILE, "GB") + size(FUNCTIONAL_SCORES, 'GB') + size(CLINICAL_DATA, 'GB')) + 5
 
