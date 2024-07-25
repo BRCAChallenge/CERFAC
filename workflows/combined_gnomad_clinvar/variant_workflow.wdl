@@ -62,11 +62,11 @@ workflow annotate_functional_variants {
 
 
     output{
-        File output_variants_file = merge_variants.combined_var
+        File output_calibration_variants_file = merge_variants.combined_var
         String output_gnomad_variants = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants = merge_variants.combined_variants_count
-        Int output_gene_length = extract_gene_loc.GENE_LENGTH
+        Int gene_length = extract_gene_loc.GENE_LENGTH
     }
 }
 
@@ -1013,24 +1013,28 @@ task merge_variants {
         combined = combined.set_index('hgvs_nt')
         combined = combined.sort_index(axis=1)
         combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
-        combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", ClinVarnan="ClinVar only", gnomADnan="gnomAD only"))
+        combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", nanClinVar="ClinVar only", gnomADnan="gnomAD only"))
 
-        rearrcols = [  'variant_source',      'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
+        rearrcols = [  'hgvs_pro_clinvar', 'hgvs_pro_gnomad', 'variant_source',  'set_gnomad',   'n_alt_alleles_exomes_gnomad',   'n_alt_alleles_genomes_gnomad',   
+        'number_submissions_clinvar', 
+        'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
         'overall_oncogenicity_classification_clinvar','submission_oncogenicity_classification_clinvar',
         'overall_somatic_classification_clinvar','submission_somatic_classification_clinvar',
         'functional_category_clinvar','functional_comment_clinvar','functional_result_clinvar',
-        'variant_class_clinvar', 'variant_effect_clinvar','MG_disease_name_clinvar','ContributesToAggregateClassification_clinvar',
+        'variant_class_gnomad','variant_class_clinvar', 'variant_effect_gnomad','variant_effect_clinvar',
+        'MG_disease_name_clinvar','ContributesToAggregateClassification_clinvar',
         'comment_clinvar',
         'VCV_ID_clinvar',
-        'ClinVar_variant_ID_clinvar','number_submissions_clinvar', 'SCV_ID_clinvar']
+        'ClinVar_variant_ID_clinvar', 'SCV_ID_clinvar']
 
         combined = combined[rearrcols + [c for c in combined.columns if c not in rearrcols]]
+        combined = combined.drop(columns=[ 'variant_source_clinvar',  'variant_source_gnomad', 'txpt_hgvsp_gnomad', 'txpt_hgvsc_from_ID_clinvar'])
 
 
 
 
 
-        combined.to_csv( "~{GENE_NAME}_combined_variants.csv",  sep=',', index=True )
+        combined.to_csv( "~{GENE_NAME}_calibration_variants.csv",  sep=',', index=True )
 
 
 
@@ -1039,7 +1043,7 @@ task merge_variants {
     >>>
 
     output {
-        File combined_var = "~{GENE_NAME}_combined_variants.csv"
+        File combined_var = "~{GENE_NAME}_calibration_variants.csv"
         String combined_variants_count = read_string("combinedcount.txt")
     }
 

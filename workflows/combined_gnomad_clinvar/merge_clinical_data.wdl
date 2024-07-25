@@ -33,7 +33,7 @@ workflow merge_clinical_data {
 
 
     output{
-        File output_clinical_file = merge_variants_clinical.var_clinical_complete    }
+        File output_combined_variants_file = merge_variants_clinical.var_clinical_complete    }
 }
 
 
@@ -79,7 +79,7 @@ task merge_variants_clinical {
 
         var_clinical_complete = pd.merge(variants_df, clinical_comb_df, how='outer', on=["hgvs_nt", "hgvs_nt"])
 
-        var_clinical_complete.to_csv("~{GENE_NAME}_variants_clinical.csv", sep=',', index=False )
+        var_clinical_complete.to_csv("~{GENE_NAME}_variants_functional_clinical.csv", sep=',', index=False )
 
 
         CODE
@@ -87,7 +87,7 @@ task merge_variants_clinical {
     >>>
 
     output {
-        File var_clinical_complete = "~{GENE_NAME}_variants_clinical.csv"
+        File var_clinical_complete = "~{GENE_NAME}_variants_functional_clinical.csv"
     }
 
     runtime {
