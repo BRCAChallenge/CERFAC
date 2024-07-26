@@ -63,9 +63,9 @@ workflow annotate_functional_variants {
 
     output{
         File output_calibration_variants_file = merge_variants.combined_var
-        String output_gnomad_variants = get_gnomad_variants.gnomad_variants_count
-        String output_clinvar_variants = merge_clinvar_variants.clinvar_variants_count
-        String output_total_variants = merge_variants.combined_variants_count
+        String output_gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
+        String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
+        String output_total_variants_count = merge_variants.combined_variants_count
         Int gene_length = extract_gene_loc.GENE_LENGTH
     }
 }
