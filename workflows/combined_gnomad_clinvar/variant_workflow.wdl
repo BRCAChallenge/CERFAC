@@ -63,7 +63,6 @@ workflow annotate_functional_variants {
 
     output{
         File output_calibration_variants_file = merge_variants.combined_var
-        File output_gnomad_versions = get_gnomad_variants.gnomadexglobalsflattened
         String output_gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants_count = merge_variants.combined_variants_count
@@ -177,10 +176,6 @@ task get_gnomad_variants {
         from gnomad.resources.grch38.gnomad import public_release
         v4genomes = public_release("genomes").ht()
         v4genomes.count()
-
-        exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions',  'date', 'version'  ).head(2)
-        flattened = exglobals.globals.flatten()
-        flattened.export('gnomad_version_info.tsv')
 
 
 
@@ -663,7 +658,6 @@ task get_gnomad_variants {
 
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
-        File gnomadexglobalsflattened = "gnomad_version_info.tsv"
         String gnomad_variants_count = read_string("gnomadcount.txt")
     }
 
