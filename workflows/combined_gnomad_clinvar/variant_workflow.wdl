@@ -661,9 +661,6 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
-
-
-        flattened.globals.export('gnomad_exomes_globals_dot_flattened.tsv')
         
 
 
