@@ -65,7 +65,7 @@ workflow annotate_functional_variants {
         File output_calibration_variants_file = merge_variants.combined_var
         File output_gnomad_data = get_gnomad_variants.gnomadexglobals
         File output_gnomadexglobalsdot = get_gnomad_variants.gnomadexglobalsdot
-        File output_gnomadexglobalsdotflattened = get_gnomad_variants.gnomadexglobalsdotflattened
+        File output_gnomadexglobalsflattened = get_gnomad_variants.gnomadexglobalsflattened
         String output_gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants_count = merge_variants.combined_variants_count
@@ -192,7 +192,7 @@ task get_gnomad_variants {
         flattened = exglobals.globals.flatten()
 
 
-        flattened.globals.export('gnomad_exomes_globals_dot_flattened.tsv')
+        flattened.export('gnomad_exomes_globals_flattened.tsv')
 
 
 
@@ -680,7 +680,7 @@ task get_gnomad_variants {
         File gnomadvar = "gnomad_variants_MANE.csv"
         File gnomadexglobals = "gnomad_exomes_globals.tsv"
         File gnomadexglobalsdot = "gnomad_exomes_globals_dot.tsv"
-        File gnomadexglobalsdotflattened = "gnomad_exomes_globals_dot_flattened.tsv"
+        File gnomadexglobalsflattened = "gnomad_exomes_globals_flattened.tsv"
         String gnomad_variants_count = read_string("gnomadcount.txt")
     }
 
