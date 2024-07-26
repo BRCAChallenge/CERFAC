@@ -177,8 +177,8 @@ task get_gnomad_variants {
         v4genomes = public_release("genomes").ht()
         v4genomes.count()
 
-        exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions', 'vep_globals', 'date', 'version'  )
-        exglobals_df = exglobals.to_pandas(flatten=True)
+        exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions', 'vep_globals', 'date', 'version'  ).head(2)
+        exglobals_df = exglobals.globals.to_pandas(flatten=True)
         exglobals_df.to_csv( "gnomad_exomes_globals.tsv",  sep='/t', index=False )
 
 
@@ -579,6 +579,9 @@ task get_gnomad_variants {
 
         gnomad_union = gnomad_union.annotate(pos_stop_alt_vrs=get_VRS_stop_alt(gnomad_union.pos_VRS_stops))
         gnomad_union = gnomad_union.annotate(pos_stop_ref_vrs=get_VRS_stop_ref(gnomad_union.pos_VRS_stops))
+
+
+
 
         gnomad_union_df = gnomad_union.to_pandas(flatten=True)
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
