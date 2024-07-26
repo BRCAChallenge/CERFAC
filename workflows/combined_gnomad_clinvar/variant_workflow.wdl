@@ -63,6 +63,7 @@ workflow annotate_functional_variants {
 
     output{
         File output_calibration_variants_file = merge_variants.combined_var
+        File output_gnomad_data = get_gnomad_variants.gnomadexglobals
         String output_gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants_count = merge_variants.combined_variants_count
@@ -175,6 +176,12 @@ task get_gnomad_variants {
         from gnomad.resources.grch38.gnomad import public_release
         v4genomes = public_release("genomes").ht()
         v4genomes.count()
+
+        exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions', 'vep_globals', 'date', 'version'  )
+        exglobals_df = exglobals.to_pandas(flatten=True)
+        exglobals_df.to_csv( "gnomad_exomes_globals.tsv",  sep='/t', index=False )
+
+
         v4exomes_varid_sm = v4exomes.select(v4exomes.freq, 
                                             v4exomes.vep.allele_string, 
                                             v4exomes.vep.start, 
@@ -636,6 +643,7 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
+        
 
 
         
@@ -649,6 +657,7 @@ task get_gnomad_variants {
 
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
+        File gnomadexglobals = "gnomad_exomes_globals.tsv"
         String gnomad_variants_count = read_string("gnomadcount.txt")
     }
 
@@ -1015,7 +1024,7 @@ task merge_variants {
         combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
         combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", nanClinVar="ClinVar only", gnomADnan="gnomAD only"))
 
-        rearrcols = [  'hgvs_pro_clinvar', 'hgvs_pro_gnomad', 'variant_source',  'set_gnomad',   'n_alt_alleles_exomes_gnomad',   'n_alt_alleles_genomes_gnomad',   
+        rearrcols = [  'txpt_hgvsc_from_ID_clinvar', 'hgvs_pro_clinvar', 'hgvs_pro_gnomad',  'txpt_hgvsp_gnomad', 'variant_source',  'set_gnomad',   'n_alt_alleles_exomes_gnomad',   'n_alt_alleles_genomes_gnomad',   
         'number_submissions_clinvar', 
         'overall_germline_classification_clinvar','submission_germline_classification_clinvar',
         'overall_oncogenicity_classification_clinvar','submission_oncogenicity_classification_clinvar',
@@ -1028,7 +1037,7 @@ task merge_variants {
         'ClinVar_variant_ID_clinvar', 'SCV_ID_clinvar']
 
         combined = combined[rearrcols + [c for c in combined.columns if c not in rearrcols]]
-        combined = combined.drop(columns=[ 'variant_source_clinvar',  'variant_source_gnomad', 'txpt_hgvsp_gnomad', 'txpt_hgvsc_from_ID_clinvar'])
+        combined = combined.drop(columns=[ 'variant_source_clinvar',  'variant_source_gnomad' ])
 
 
 
