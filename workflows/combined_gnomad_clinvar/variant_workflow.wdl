@@ -64,6 +64,8 @@ workflow annotate_functional_variants {
     output{
         File output_calibration_variants_file = merge_variants.combined_var
         File output_gnomad_data = get_gnomad_variants.gnomadexglobals
+        File output_gnomadexglobalsdot = get_gnomad_variants.gnomadexglobalsdot
+        File output_gnomadexglobalsdotflattened = get_gnomad_variants.gnomadexglobalsdotflattened
         String output_gnomad_variants_count = get_gnomad_variants.gnomad_variants_count
         String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
         String output_total_variants_count = merge_variants.combined_variants_count
@@ -156,7 +158,8 @@ task get_gnomad_variants {
         import json
         import string
         import pandas as pd
-        import re 
+        import re
+        import logging
 
         import gnomad
         import hail as hl
@@ -178,8 +181,20 @@ task get_gnomad_variants {
         v4genomes.count()
 
         exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions', 'vep_globals', 'date', 'version'  ).head(2)
-        exglobals_df = exglobals.globals.to_pandas(flatten=True)
-        exglobals_df.to_csv( "gnomad_exomes_globals.tsv",  sep='/t', index=False )
+        exglobals.export('gnomad_exomes_globals.tsv')
+
+        v4genomes.count()
+        exglobals.globals.export('gnomad_exomes_globals_dot.tsv')
+
+        v4genomes.count()
+
+
+        flattened = exglobals.globals.flatten()
+
+
+        flattened.globals.export('gnomad_exomes_globals_dot_flattened.tsv')
+
+
 
 
         v4exomes_varid_sm = v4exomes.select(v4exomes.freq, 
@@ -646,6 +661,9 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
+
+
+        flattened.globals.export('gnomad_exomes_globals_dot_flattened.tsv')
         
 
 
@@ -661,6 +679,8 @@ task get_gnomad_variants {
     output {
         File gnomadvar = "gnomad_variants_MANE.csv"
         File gnomadexglobals = "gnomad_exomes_globals.tsv"
+        File gnomadexglobalsdot = "gnomad_exomes_globals_dot.tsv"
+        File gnomadexglobalsdotflattened = "gnomad_exomes_globals_dot_flattened.tsv"
         String gnomad_variants_count = read_string("gnomadcount.txt")
     }
 
