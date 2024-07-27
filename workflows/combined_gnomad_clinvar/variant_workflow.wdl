@@ -683,7 +683,7 @@ task get_clinvar_variants_file {
     command <<<
         set -eux -o pipefail
 
-        esearch -db clinvar -query "~{GENE_NAME}[GENE] AND single_gene [PROP] AND homo sapiens [ORGN] AND (varlen 49 or less[FILTER]) NOT (near gene upstream[PROP]) NOT (near gene downstream[PROP])" |
+        esearch -db clinvar -query "~{GENE_NAME}[GENE] AND homo sapiens [ORGN] AND (varlen 49 or less[FILTER]) NOT (near gene upstream[PROP]) NOT (near gene downstream[PROP])" |
         efetch -format variationid > basic.xml
     >>>
 
