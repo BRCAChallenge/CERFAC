@@ -989,6 +989,7 @@ task merge_variants {
         import json
         import string
         import pandas as pd
+        import numpy as np
 
 
 
