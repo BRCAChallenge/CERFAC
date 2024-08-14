@@ -606,13 +606,6 @@ task get_gnomad_variants {
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "upstream_gene_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "intron_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_region_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_region_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_acceptor_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_5th_base_variant"]
-        gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_polypyrimidine_tract_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "5_prime_UTR_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "3_prime_UTR_variant"]
 
@@ -941,9 +934,6 @@ task merge_clinvar_variants {
         clinvar_complete = clinvar_complete[cols]
 
 
-        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "intron variant"]
-        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice donor variant"]
-        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice acceptor variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "5 prime UTR variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "3 prime UTR variant"]
 
