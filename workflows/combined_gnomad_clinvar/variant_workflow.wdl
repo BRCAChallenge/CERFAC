@@ -1028,6 +1028,12 @@ task merge_variants {
 
         combined = combined[rearrcols + [c for c in combined.columns if c not in rearrcols]]
         combined = combined.drop(columns=[ 'variant_source_clinvar',  'variant_source_gnomad' ])
+        combined = combined.reset_index()
+        from natsort import index_natsorted
+        combined.sort_values( by='hgvs_nt', key=lambda x: np.argsort(index_natsorted(combined["hgvs_nt"])))
+
+        combined = combined.set_index('hgvs_nt')
+
 
 
 

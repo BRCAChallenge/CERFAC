@@ -52,6 +52,7 @@ CMD ["/bin/bash"]
 USER root
 # python packages
 RUN pip3 install pandas
+RUN pip3 install natsort
 
 # add script
 #WORKDIR /opt/scripts
