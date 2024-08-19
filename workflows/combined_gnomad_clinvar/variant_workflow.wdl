@@ -598,6 +598,12 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df[gnomad_union_df.txpt_gene_symbol == "~{GENE_NAME}"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
+        gnomad_union_df[['variant_effect' ]] = gnomad_union_df[['variant_effect' ]].astype('str')
+        gnomad_union_df.loc[:, ('variant_effect')] = gnomad_union_df.loc[:, ('variant_effect')].astype('str').str.replace('[','')
+        gnomad_union_df.loc[:, ('variant_effect')] = gnomad_union_df.loc[:, ('variant_effect')].astype('str').str.replace(']','')
+        gnomad_union_df.loc[:, ('variant_effect')] = gnomad_union_df.loc[:, ('variant_effect')].astype('str').str.replace("'","")
+
+
 
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
