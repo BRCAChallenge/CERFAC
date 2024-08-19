@@ -599,10 +599,6 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df[gnomad_union_df['txpt_mane_select'].str.startswith('NM')]
 
 
-        badcols = ['variant_effect']
-        gnomad_union_df = gnomad_union_df.explode(badcols)
-
-
         badcols = ['txpt_uniprot_isoform']
         gnomad_union_df = gnomad_union_df.explode(badcols)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "upstream_gene_variant"]
