@@ -12,4 +12,15 @@ workflows:
       authors:
           - name: Allison Cheney
             email: archeney@ucsc.edu
-
+    - name: get_gnomad_variants
+      subclass: WDL
+      primaryDescriptorPath: /workflows/combined_gnomad_clinvar/get_gnomad_vars.wdl
+      authors:
+          - name : Allison Cheney
+            email: archeney@ucsc.edu
+    - name: get_clinvar_variants
+      subclass: WDL
+      primaryDescriptorPath: /workflows/combined_gnomad_clinvar/get_clinvar_variants.wdl
+      authors:
+          name: Allison Cheney
+          email: archeney@ucsc.edu
