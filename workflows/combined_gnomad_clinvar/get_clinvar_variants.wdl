@@ -43,7 +43,7 @@ workflow get_clinvar_variants {
     }
 
     output{
-        String output_clinvar_variants = merge_clinvar_variants.clinvar_var,
+        File output_clinvar_variants = merge_clinvar_variants.clinvar_var
         String output_clinvar_variants_count = merge_clinvar_variants.clinvar_variants_count
     }
 }
