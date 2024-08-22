@@ -1,3 +1,6 @@
+##Version 1.0.
+## still need to adjust OR by ethnicity
+
 library(tidyverse)
 
 ##This script takes case control observational data as input and computes odds ratios
