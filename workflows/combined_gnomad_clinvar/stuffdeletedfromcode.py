@@ -29,6 +29,8 @@
         exglobals = v4exomes.select_globals('tool_versions', 'vrs_versions',  'version'  ).head(2)
         flattened = exglobals.globals.flatten()
         flattened.export('gnomad_version_info.tsv')
+        badcols = ['variant_effect']
+        gnomad_union_df = gnomad_union_df.explode(badcols)
 
 
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice donor variant"]
@@ -45,7 +47,8 @@
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "intron_variant"]
 
 
-
+#"NM_007294.4(BRCA1):c.5476C&gt;T (p.Gln1826Ter)"
+MANE_select_txpt = "NM_007294.4"
 
 √¢‚Ç¨≈°√É‚Äû√É¬∫
 √¢‚Ç¨≈°√É‚Äû√É¬π 

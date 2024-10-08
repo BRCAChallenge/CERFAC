@@ -593,10 +593,10 @@ task get_gnomad_variants {
         gnomad_union_df[['txpt_hgvsc' ]] = gnomad_union_df[['txpt_hgvsc' ]].astype('str')
         gnomad_union_df['CERFAC_variant_id_HGVS_long'] = gnomad_union_df[['ref_genome', 'locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
 
-        gnomad_union_df['txpt_hgvsc'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
+        gnomad_union_df['txpt_hgvsc_short'] = gnomad_union_df['txpt_hgvsc'].str.split(pat=":", n=1,  regex=False).str.get(1)
         gnomad_union_df['hgvs_pro'] = gnomad_union_df['txpt_hgvsp'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
-        gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
+        gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc_short' ]].astype(str).agg(':'.join, axis=1)
 
 
         gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance', 'txpt_biotype', 'txpt_canonical',
@@ -606,7 +606,7 @@ task get_gnomad_variants {
         gnomad_union_df[['txpt_exon' ]] = gnomad_union_df[['txpt_exon' ]].astype('str')
         gnomad_union_df[['txpt_intron' ]] = gnomad_union_df[['txpt_intron' ]].astype('str')
 
-        gnomad_variants_count_pd = str(gnomad_union_df['txpt_hgvsc'].nunique())
+        gnomad_variants_count_pd = str(gnomad_union_df['txpt_hgvsc_short'].nunique())
         file_name = "gnomadcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(gnomad_variants_count_pd)
@@ -617,6 +617,8 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
+        gnomad_union_df['hgvs_cdna_gnomad'] = gnomad_union_df[['txpt_mane_select_gnomad', 'txpt_hgvsc_short_gnomad' ]].astype(str).agg(':'.join, axis=1)
+
         
 
 
@@ -652,7 +654,7 @@ task merge_variants {
         File clinvar_var
         Int memSizeGB = 6
         Int threadCount = 1
-        Int diskSizeGB = 5*round(size(gnomadvar, "GB")) + 20
+        Int diskSizeGB = 5*round(size(gnomadvar, "GB")) + 10
         String GENE_NAME
     }
 
@@ -670,8 +672,10 @@ task merge_variants {
 
         cv_table = pd.read_csv("~{clinvar_var}", sep=',' )
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
-        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_gnomad": "hgvs_nt"}, errors='raise')
+        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_short_gnomad": "hgvs_nt"}, errors='raise')
         cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "hgvs_nt"}, errors='raise')
+
+
         combined = gnomad_vars.set_index('hgvs_nt').join(cv_table.set_index('hgvs_nt'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
 
 
@@ -709,6 +713,7 @@ task merge_variants {
         combined = combined.sort_values( by='hgvs_nt', key=lambda x: np.argsort(index_natsorted(combined["hgvs_nt"])))
 
         combined = combined.set_index('hgvs_nt')
+
 
 
 

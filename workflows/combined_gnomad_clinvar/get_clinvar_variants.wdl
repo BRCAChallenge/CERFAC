@@ -74,7 +74,7 @@ task get_clinvar_variants_file {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 1
         preemptible: 1
     }
 }
@@ -107,7 +107,7 @@ task extract_clinvar_variants_traitmap {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 0
+        maxRetries: 1
         preemptible: 1
     }
 }
@@ -210,7 +210,7 @@ task extract_clinvar_variants_basic {
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
         docker: "allisoncheney/cerfac_terra:clinvar"
-        maxRetries: 3
+        maxRetries: 1
         preemptible: 1
     }
 }
@@ -296,6 +296,7 @@ task merge_clinvar_variants {
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)
+        clinvar_complete['txpt_hgvsc_from_ID_no_pro'] = clinvar_complete['txpt_hgvsc_from_ID'].str.split(pat=" ", n=1,  regex=False).str.get(0)
         clinvar_complete['hgvs_pro'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=" ", n=1,  regex=False).str.get(1)
         clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=True, to_replace='\)', value='')
         clinvar_complete['hgvs_pro'] = clinvar_complete['hgvs_pro'].replace(regex=True, to_replace='\(', value='')
@@ -314,7 +315,7 @@ task merge_clinvar_variants {
         'overall_som_review_status','overall_somatic_classification','submission_somatic_classification',
         'comment',
         'functional_category','functional_comment','functional_result', 
-        'date_variant_created', 'date_variant_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted']
+        'date_variant_created', 'date_variant_updated',  'date_submission_created', 'date_submission_updated', 'date_submitted', 'txpt_hgvsc_from_ID_no_pro']
 
         clinvar_complete = clinvar_complete[cols]
 
@@ -329,6 +330,14 @@ task merge_clinvar_variants {
         clinvar_complete = clinvar_complete.rename(columns={"ref": "allele_ref",  "alt": "allele_alt",   "start": "pos_start",   "stop": "pos_stop"}, errors='raise')
         clinvar_complete['variant_source']="ClinVar"
         clinvar_complete = clinvar_complete.add_suffix('_clinvar')
+
+         combined['txpt_ref_from_ID'] = combined['ClinVar_variant_ID_clinvar'].str.split(pat=":", n=1,  regex=False).str.get(0)
+
+        combined['ref_txpt_clinvar'] = combined['txpt_ref_from_ID'].str.split(pat="(", n=1,  regex=False).str.get(0)
+        combined['hgvs_cdna_clinvar'] = combined[['ref_txpt_clinvar', 'hgvs_nt' ]].astype(str).agg(':'.join, axis=1)
+        combined['hgvs_cdna_clinvar_from_ID'] = combined[['ref_txpt_clinvar', 'txpt_hgvsc_from_ID_no_pro_clinvar' ]].astype(str).agg(':'.join, axis=1)
+
+
         clinvar_complete.to_csv("clinvar_variants.csv", sep=',', index=False )
 
 
