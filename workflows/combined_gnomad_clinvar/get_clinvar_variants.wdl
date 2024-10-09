@@ -331,7 +331,7 @@ task merge_clinvar_variants {
         clinvar_complete['variant_source']="ClinVar"
         clinvar_complete = clinvar_complete.add_suffix('_clinvar')
 
-         combined['txpt_ref_from_ID'] = combined['ClinVar_variant_ID_clinvar'].str.split(pat=":", n=1,  regex=False).str.get(0)
+        combined['txpt_ref_from_ID'] = combined['ClinVar_variant_ID_clinvar'].str.split(pat=":", n=1,  regex=False).str.get(0)
 
         combined['ref_txpt_clinvar'] = combined['txpt_ref_from_ID'].str.split(pat="(", n=1,  regex=False).str.get(0)
         combined['hgvs_cdna_clinvar'] = combined[['ref_txpt_clinvar', 'hgvs_nt' ]].astype(str).agg(':'.join, axis=1)
