@@ -329,6 +329,10 @@ task merge_clinvar_variants {
             x_file.write(clinvar_variants_count_pd)
         clinvar_complete = clinvar_complete.rename(columns={"ref": "allele_ref",  "alt": "allele_alt",   "start": "pos_start",   "stop": "pos_stop"}, errors='raise')
         clinvar_complete['variant_source']="ClinVar"
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice donor variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice acceptor variant"]
+        clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "intron variant"]
+
         clinvar_complete = clinvar_complete.add_suffix('_clinvar')
 
         clinvar_complete['txpt_ref_from_ID'] = clinvar_complete['ClinVar_variant_ID_clinvar'].str.split(pat=":", n=1,  regex=False).str.get(0)
