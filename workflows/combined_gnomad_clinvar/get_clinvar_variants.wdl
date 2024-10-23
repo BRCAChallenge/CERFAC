@@ -291,8 +291,9 @@ task merge_clinvar_variants {
         trait_comb[['CA_ID' ]] = trait_comb[['CA_ID' ]].astype('str')
 
         clinvar_complete = pd.merge(Gene_CV_basic, trait_comb, how='outer', on=["VCV_ID", "CA_ID"])
+        clinvar_complete['Chr'] = clinvar_complete['Chr'].astype(str)
+        clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['Chr','pos_VCF','ref','alt' ]].astype(str).agg('-'.join, axis=1)
         clinvar_complete['Chr'] = 'chr' + clinvar_complete['Chr'].astype(str)
-        clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr','pos_VCF','ref','alt' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_long'] = clinvar_complete[['assembly', 'Chr','ClinVar_variant_ID' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['CERFAC_variant_id_HGVS_short'] = clinvar_complete[['assembly', 'Chr','pos_VCF','txpt_hgvsc' ]].astype(str).agg(':'.join, axis=1)
         clinvar_complete['txpt_hgvsc_from_ID'] = clinvar_complete['ClinVar_variant_ID'].str.split(pat=":", n=1,  regex=False).str.get(1)

@@ -488,11 +488,11 @@ task get_gnomad_variants {
                 max_length: (optional) length at which to truncate the <chrom>:<pos>:<ref>:<alt> string
 
             Return:
-                string: "<chrom>:<pos>:<ref>:<alt>"
+                string: "<chrom>-<pos>-<ref>-<alt>"
             """
             refgen = get_ref_genome(locus)
             end_alt = get_end_pos_alt(locus,alleles)
-            var_id = refgen + ":" + hl.str(locus.contig) + ":" + hl.str(locus.position) + ":" + alleles[0] + ":" + alleles[1]
+            var_id =  hl.str(locus.contig) + "-" + hl.str(locus.position) + "-" + alleles[0] + "-" + alleles[1]
 
             if max_length is not None:
                 return var_id[0:max_length]
@@ -597,6 +597,7 @@ task get_gnomad_variants {
         gnomad_union_df['hgvs_pro'] = gnomad_union_df['txpt_hgvsp'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
         gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc_short' ]].astype(str).agg(':'.join, axis=1)
+        gnomad_union_df['CERFAC_variant_id_VCF'] = gnomad_union_df[['CERFAC_variant_id_VCF' ]].astype(str).replace("chr", "")
 
 
         gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance', 'txpt_biotype', 'txpt_canonical',
