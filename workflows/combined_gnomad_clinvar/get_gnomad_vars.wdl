@@ -673,24 +673,24 @@ task merge_variants {
 
         cv_table = pd.read_csv("~{clinvar_var}", sep=',' )
         gnomad_vars = pd.read_csv("~{gnomadvar}", sep=',' )
-        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_short_gnomad": "hgvs_nt"}, errors='raise')
-        cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "hgvs_nt"}, errors='raise')
+        gnomad_vars = gnomad_vars.rename(columns={"CERFAC_variant_id_VCF_gnomad": "VCF_genomic_ID"}, errors='raise')
+        cv_table = cv_table.rename(columns={"CERFAC_variant_id_VCF_clinvar": "VCF_genomic_ID"}, errors='raise')
 
 
-        combined = gnomad_vars.set_index('hgvs_nt').join(cv_table.set_index('hgvs_nt'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
+        combined = gnomad_vars.set_index('VCF_genomic_ID').join(cv_table.set_index('VCF_genomic_ID'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
 
 
-        combined.sort_values(['hgvs_nt'])
+        combined.sort_values(['VCF_genomic_ID'])
         combined = combined.reset_index()
 
 
-        combined_variants_count_pd = str(combined['hgvs_nt'].nunique())
+        combined_variants_count_pd = str(combined['VCF_genomic_ID'].nunique())
 
 
         file_name = "combinedcount.txt"
         with open(file_name, 'w') as x_file:
             x_file.write(combined_variants_count_pd)
-        combined = combined.set_index('hgvs_nt')
+        combined = combined.set_index('VCF_genomic_ID')
         combined = combined.sort_index(axis=1)
         combined['variant_source'] = combined.variant_source_gnomad.astype(str).str.cat(combined.variant_source_clinvar.astype(str), sep='', na_rep=None)
         combined['variant_source'] = combined['variant_source'].replace(to_replace=dict(gnomADClinVar="gnomAD and ClinVar", nanClinVar="ClinVar only", gnomADnan="gnomAD only"))
@@ -711,9 +711,9 @@ task merge_variants {
         combined = combined.drop(columns=[ 'variant_source_clinvar',  'variant_source_gnomad' ])
         combined = combined.reset_index()
         from natsort import index_natsorted
-        combined = combined.sort_values( by='hgvs_nt', key=lambda x: np.argsort(index_natsorted(combined["hgvs_nt"])))
+        combined = combined.sort_values( by='VCF_genomic_ID', key=lambda x: np.argsort(index_natsorted(combined["VCF_genomic_ID"])))
 
-        combined = combined.set_index('hgvs_nt')
+        combined = combined.set_index('VCF_genomic_ID')
 
 
 

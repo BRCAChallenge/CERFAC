@@ -37,7 +37,7 @@
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "splice acceptor variant"]
         clinvar_complete = clinvar_complete[clinvar_complete.variant_effect != "intron variant"]
 
-
+clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr','pos_VCF','ref','alt' ]].astype(str).agg('-'.join, axis=1)
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_region_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_region_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_variant"]
@@ -45,6 +45,7 @@
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_donor_5th_base_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "splice_polypyrimidine_tract_variant"]
         gnomad_union_df = gnomad_union_df[gnomad_union_df.variant_effect != "intron_variant"]
+        
 
 
 #"NM_007294.4(BRCA1):c.5476C&gt;T (p.Gln1826Ter)"
