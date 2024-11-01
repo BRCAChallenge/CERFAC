@@ -345,13 +345,18 @@ task merge_variants_clinical {
             calib_df = pd.read_csv(datafile_name, delimiter=",", keep_default_na=True, index_col=False, low_memory=False)
             calib_VRS_df = pd.merge(calib_df, VCF_VRS, how='outer', on=["VCF_genomic_ID", "VCF_genomic_ID"])
             return calib_VRS_df
-        
+        def find_file_type_import_pandas(file_name):
+            read_functions = {'csv': ',', 'xlsx': '\t', 'txt': '\t', 'tsv': '\t'}
+            print(file_name) 
+            [orig_df] = [pd.read_csv(file_name, sep=delim, keep_default_na=True, index_col=False, low_memory=False) for file_ext, delim in read_functions.items()
+                    if file_name.endswith(file_ext)]
+            return orig_df
         def merge_table_entries(datafile_name, table):
             col_name= get_col_name(datafile_name)
             items = table.items()
             VCF_VRS = pd.DataFrame({col_name: [i[0] for i in items], 'VRS_ID': [i[1] for i in items]})
                 
-            orig_df = pd.read_csv(datafile_name, sep=None, keep_default_na=True, index_col=False, low_memory=False)
+            orig_df = find_file_type_import_pandas(datafile_name)
             new_VRS_df = pd.merge(orig_df, VCF_VRS, how='outer', on=[col_name, col_name])
             return new_VRS_df
 
