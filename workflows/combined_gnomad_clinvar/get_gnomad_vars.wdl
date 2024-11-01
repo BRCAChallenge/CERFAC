@@ -597,7 +597,8 @@ task get_gnomad_variants {
         gnomad_union_df['hgvs_pro'] = gnomad_union_df['txpt_hgvsp'].str.split(pat=":", n=1,  regex=False).str.get(1)
 
         gnomad_union_df['CERFAC_variant_id_HGVS_short'] = gnomad_union_df[['ref_genome','locus','txpt_hgvsc_short' ]].astype(str).agg(':'.join, axis=1)
-        gnomad_union_df['CERFAC_variant_id_VCF'] = gnomad_union_df[['CERFAC_variant_id_VCF' ]].astype(str).replace("chr", "")
+        gnomad_union_df[['CERFAC_variant_id_VCF' ]] = gnomad_union_df[['CERFAC_variant_id_VCF' ]].astype('str')
+        gnomad_union_df['CERFAC_variant_id_VCF'] = gnomad_union_df[['CERFAC_variant_id_VCF' ]].astype('str').replace("chr", "")
 
 
         gnomad_union_df = gnomad_union_df.drop(columns=[ 'txpt_appris',  'txpt_distance', 'txpt_biotype', 'txpt_canonical',
@@ -618,7 +619,7 @@ task get_gnomad_variants {
         gnomad_union_df = gnomad_union_df.sort_index(axis=1)
         gnomad_union_df['variant_source']="gnomAD"
         gnomad_union_df = gnomad_union_df.add_suffix('_gnomad')
-        gnomad_union_df['hgvs_cdna_gnomad'] = gnomad_union_df[['txpt_mane_select_gnomad', 'txpt_hgvsc_short_gnomad' ]].astype(str).agg(':'.join, axis=1)
+        gnomad_union_df['HGVS_cDNA_ID_gnomad'] = gnomad_union_df[['txpt_mane_select_gnomad', 'txpt_hgvsc_short_gnomad' ]].astype(str).agg(':'.join, axis=1)
 
         
 
