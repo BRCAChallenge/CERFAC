@@ -385,7 +385,7 @@ task merge_variants_clinical {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "allisoncheney/cerfac_terra:clinvar"
+        docker: "allisoncheney/cerfac_terra:merge_clinical_data"
         maxRetries: 3
         preemptible: 1
     }

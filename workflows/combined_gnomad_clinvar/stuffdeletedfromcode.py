@@ -48,9 +48,20 @@ clinvar_complete['CERFAC_variant_id_VCF'] = clinvar_complete[['assembly', 'Chr',
         
 
 
+        gnomad_vars = gnomad_vars.rename(columns={"txpt_hgvsc_short_gnomad": "hgvs_nt"}, errors='raise')
+        cv_table = cv_table.rename(columns={"txpt_hgvsc_clinvar": "hgvs_nt"}, errors='raise')
+
+
+        combined = gnomad_vars.set_index('hgvs_nt').join(cv_table.set_index('hgvs_nt'), how='outer', lsuffix='_gnomad', rsuffix='_clinvar' )
+
 #"NM_007294.4(BRCA1):c.5476C&gt;T (p.Gln1826Ter)"
 MANE_select_txpt = "NM_007294.4"
 
 √¢‚Ç¨≈°√É‚Äû√É¬∫
 √¢‚Ç¨≈°√É‚Äû√É¬π 
 √É¬¢√¢‚Äö¬¨√¢‚Ç¨¬π
+
+
+#maybe take all caps names from file
+
+cases_df['VCF_genomic_ID'] = cases_df[['CHR','POS','REF' , 'ALT']].astype(str).agg(':'.join, axis=1)
