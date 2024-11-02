@@ -65,3 +65,5 @@ MANE_select_txpt = "NM_007294.4"
 #maybe take all caps names from file
 
 cases_df['VCF_genomic_ID'] = cases_df[['CHR','POS','REF' , 'ALT']].astype(str).agg(':'.join, axis=1)
+
+        variants_df = pd.read_csv("~{VARIANTS_FILE}", delimiter=",", keep_default_na=True)

@@ -62,6 +62,7 @@ task merge_variants_clinical {
         import requests
         import re
         from enum import Enum
+        import json
 
 
         class AnnotationLayer(str, Enum):
@@ -71,7 +72,7 @@ task merge_variants_clinical {
             HGVS_CDNA = "c"
             HGVS_GENOMIC = "g"
         def get_col_name(datafile_name):
-            with open (file=datafile_name, mode='rt') as file:
+            with open (file=datafile_name, mode='rt', newline='') as file:
                 rows = find_file_type_import(file, datafile_name)
                 headers = next(rows)
                 col_name = parse_header(headers)
@@ -79,7 +80,8 @@ task merge_variants_clinical {
 
         def parse_header(header):
             col_name=str(header[0])
-
+            if "\ufeff" in col_name:
+                col_name = col_name.replace("\ufeff", "")
             return col_name
 
         def find_file_type_import(file, file_name):
@@ -91,7 +93,7 @@ task merge_variants_clinical {
 
         def load_table(datafile_name, url):
             table = {}
-            with open (file=datafile_name, mode='rt') as file:
+            with open (file=datafile_name, mode='rt', newline='') as file:
                 rows = find_file_type_import(file, datafile_name)
 
                 csv_headings = next(rows)
@@ -361,15 +363,17 @@ task merge_variants_clinical {
             return new_VRS_df
 
         URL = "https://normalize.cancervariants.org/variation/to_vrs"
-        variants_df = pd.read_csv("~{VARIANTS_FILE}", delimiter=",", keep_default_na=True)
-        VRS_var_table = load_table("~{VARIANTS_FILE}", URL)
-        Calib_VRS_table = merge_table_entries("~{VARIANTS_FILE}", VRS_var_table)
+
+        VRS_cases_table = load_table("~{CLINICAL_DATA}", URL)
+        Cases_VRS_table = merge_table_entries("~{CLINICAL_DATA}", VRS_cases_table)
 
         VRS_scores_table = load_table("~{FUNCTIONAL_SCORES}", URL)
         Scores_VRS_table = merge_table_entries("~{FUNCTIONAL_SCORES}", VRS_scores_table)
 
-        VRS_cases_table = load_table("~{CLINICAL_DATA}", URL)
-        Cases_VRS_table = merge_table_entries("~{CLINICAL_DATA}", VRS_cases_table)
+        
+        VRS_var_table = load_table("~{VARIANTS_FILE}", URL)
+        Calib_VRS_table = merge_table_entries_main("~{VARIANTS_FILE}", VRS_var_table)
+
 
         clinical_comb_df = pd.merge(Scores_VRS_table, Cases_VRS_table, how='outer', on=["VRS_ID", "VRS_ID"])
 
