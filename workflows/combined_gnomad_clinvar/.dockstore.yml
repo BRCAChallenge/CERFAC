@@ -8,7 +8,7 @@ workflows:
             email: archeney@ucsc.edu
     - name: merge_clinical_data
       subclass:  WDL
-      primaryDescriptorPath: /workflows/combined_gnomad_clinvar/merge_clinical_data.wdl
+      primaryDescriptorPath: /workflows/combined_gnomad_clinvar/merge_clinical_functional_data.wdl
       authors:
           - name: Allison Cheney
             email: archeney@ucsc.edu
