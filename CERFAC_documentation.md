@@ -1,54 +1,50 @@
 # CERFAC
 ## Cloud Enabled, Rigorous, Functional Assay Calibration
 
+Multiplexed assays of variant effect (MAVEs) and computational tools have the potential to help classify many variants that are discovered during clinical genetic sequencing. However, predictions from assays and tools are not direct measures of human health and require careful calibration and validation prior to clinical use.
 
-Multiplexed assays of variant effect (MAVEs) and computational tools have the potential
-to help classify many variants that are discovered during clinical genetic sequencing.
-However, predictions from assays and tools are not direct measures of human health
-and require careful calibration and validation prior to clinical use.
+Calibration of functional assays results in thresholds above or below which variants are predicted to be associated with disease or not. Calibration often relies on the ability of the assay to correctly classify variants of known effect (for example, to correctly classify variants which have been classified in ClinVar). However, it is known that this method introduces circularities and inflated assessments of performance; for example, existing ClinVar classifications might have been informed by the results of similar functional assays. Rather, if the calibration is validated on sets of clinical and control observations, such as case-control data, it is likely that many of the observed variants will not yet be classified, and are thus less subject to problems with circularities; this approach provides a more objective means to assess the performance of the assay on novel variants.
 
-Calibration of assays and tools results in thresholds above or below which variants are
-predicted to be associated with disease or not. Calibration often relies on the ability of
-the assay or tool to correctly classify variants of known effect (re-call). It is known that
-this method introduces circularities and inflated assessments of performance. Validating
-the calibration on sets of clinical and control observations (many of which are not
-classified and thus less subject to problems with circularities) provides a means to
-assess the performance of the assay or computational tool on novel variants.
+This strategy relies on identifying a group of variants that are known to be pathogenic and calculating the effect size (in this case an odds ratio, OR) of these variants in the case and control data. This provides a “standard candle” by which other groups of variants, such as those predicted to be associated with disease by the assay, can be evaluated.
 
-This strategy relies on identifying a group of variants that are known to be pathogenic
-and calculating the effect size (in this case an odds ratio, OR) of these variants in the
-case and control data. This provides a “standard candle” by which other groups of
-variants, such as those predicted to be associated with disease by the assay or
-computational tool, can be evaluated.
+Groups of variants with an OR close to or equal to 1 are consistent with benign variants (equally likely to be observed in cases and controls). Groups of variants with an elevated OR close to that of the “standard candle” would be consistent with variants that are associated with the disease in question (more likely to be observed in cases than in controls). Groups of variants that fall between an OR of 1 and the OR of the “standard candle” group will need to be carefully interpreted within the clinical context of the disease.
 
-Groups of variants with an OR close to or equal to 1 are consistent with benign variants
-(equally likely to be observed in cases and controls). Groups of variants with an
-elevated OR close to that of the “standard candle” would be consistent with variants that
-are associated with the disease in question (more likely to be observed in cases than in
-controls). Groups of variants that fall between an OR of 1 and the OR of the “standard
-candle” group will need to be carefully interpreted within the clinical context of the
-disease.
+This workspace provides a resource for users to validate functional assay calibrations. It requires the following user input:
 
-Well-calibrated and clinically relevant assays and computational tools should yield
-groups of predicted benign variants with ORs close to 1 and predicted pathogenic
-variants with elevated ORs close to that of the “standard candle”.
-
+1. Functional assay scores and corresponding calibration thresholds
+2. Clinical observational data for gene/disease of interest
+3. Clinically informed ORs thresholds for gene/disease of interest
 
 
 # Overview
-In the parlance of Terra documentation, workflows refer to scripts with ordered steps written in WDL. "Analyses" refer to Jupyter notebooks.
+
+In the parlance of Terra documentation, “workflows” refer to scripts with ordered steps written in WDL (Workflow Description Language), while "Analyses" refer to Jupyter notebooks.
 
 This workspace contains 3 WDL workflows and 1 Jupyter notebook analysis.
 
 The 3 workflows are used to generate calibration variants for the gene of interest from gnomAD and ClinVar variants.
 
+The 3rd workflow requires 2 user-provided files:
+
+- Functional assay data for the gene of interest including scores.
+
+- Clinical observation data pertaining to the gene of interest.
+
 The output will be a tsv file that the user can download and edit.
 
-The jupyter notebook contains the R script used to calibrate the functional assay. 
+The Jupyter notebook contains the actual calibration.
 
+To perform Jupyter notebook analysis you will need:
 
+- The output (file) of the three workflows above, which combines the calibration variants the workflow generates for you, the functional assay file you provide, and the clinical observational data file you provide.
 
+- Functional threshold score cutoffs for the functional assay
 
+- Odds ratio threshold
+
+- The population frequency of the relevant disease
+
+- Total control and case counts (from your clinical observational data)
 
 
 ## Time and Cost Information
@@ -193,8 +189,7 @@ Note: It may help to write down or memorize the name of your workspace
 Let's walk through an example of how to run these workflows. We'll be using BRCA1 as our example. 
 
 ## Step 1: Set up your Data Table with your gene of interest. 
-A sample Data Table keeps track of genes we run our workflows on, any annotations we'd like to keep track of, and is an easy place for us to keep our clinical and functional assay files, and allows us to find out output files easily. Without the sample data table, we would have to resort to digging in our Bucket to find the output files. 
-
+Within this workspace, we have provided a sample table to keep track of our calibrations and to organize the results. The name of the table is “sample”.
 
 Navigate to the DATA tab. You may wish to open it in a new tab and refer back to this documentation. 
 
@@ -217,7 +212,7 @@ Leave the other inputs blank.
 
 Click "Add" in the blue box at the bottom right. 
 
-## Step 3: Upload clinical data file and functional assay data file to workspace data. 
+## Step 2: Upload clinical data file and functional assay data file to workspace data. 
 
 It is somewhat complicated to make a file available to a workflow in Terra, but doable. 
 
@@ -246,7 +241,7 @@ Now we've got to do the other file. Go back to the Files section, and copy the U
 
 NOTE: Make sure you are adding the correct files to the correct column! Example: Your functional assay data file should be added to the "functional_assay_file" column, not the "clinical_data_file" column. 
 
-## Step 4: Generate ClinVar calibation variants by running the workflow. 
+## Step 3: Generate ClinVar calibation variants by running the workflow. 
 
 Now that the Data Table has the necessary files, we can run the workflows. We're going to continue to use BRCA1 as an example. 
 
@@ -283,15 +278,15 @@ Then click the **save** button on the right. Then click Run Analysis. You can ad
 
 
 
-## Step 5: Generate gnomAD calibration variants by running the 2-get_gnomad_variants workflow. 
+## Step 4: Generate gnomAD calibration variants by running the 2-get_gnomad_variants workflow. 
 
-Repeat step 4, this time selecting the "2-get_gnomad_variants" workflow. Because of the size of the gnomAD database, this takes the longest to run. The processing time, and the memory needed to run the workflow, will depend in part on the length of the gene of interest. The workflow is optimized to allocate the minimum amount of memory needed based on the length of the gene. 
+Repeat step 3, this time selecting the "2-get_gnomad_variants" workflow. Because of the size of the gnomAD database, this takes the longest to run. The processing time, and the memory needed to run the workflow, will depend in part on the length of the gene of interest. The workflow is optimized to allocate the minimum amount of memory needed based on the length of the gene. 
 
 
 
-## Step 6: Merge calibration variants using the 3-merge_clinical_functional_data workflow.
+## Step 5: Merge calibration variants using the 3-merge_clinical_functional_data workflow.
 
-Repeat step 4, this time selecting the "3-merge_clinical_functional_data" workflow.
+Repeat step 3, this time selecting the "3-merge_clinical_functional_data" workflow.
 This merges the calibration variants, the functional scores file you provide, and the clinical observational data file you provide. 
 
 
