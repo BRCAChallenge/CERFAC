@@ -195,7 +195,7 @@ Navigate to the DATA tab. You may wish to open it in a new tab and refer back to
 
 Under TABLES, click on **sample**. If the workspace was cloned correctly, the sample data table will contain rows of genes with additional annotations. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/data_tab_sample_table_36_boxed.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/data_tab_sample_table_1_boxed.png?raw=true)
 
 In this example, we are going to be adding a row for the gene BRCA1 to our sample data table. 
 
