@@ -51,13 +51,14 @@ Note: It may help to write down or memorize the name of your workspace
 Let's walk through an example of how to run these workflows. We'll be using BRCA1 as our example. 
 
 ## Step 1: Set up your Data Table with your gene of interest. 
-Within this workspace, we have provided a sample table to keep track of our calibrations and to organize the results. The name of the table is “sample”.
+Within this workspace, we have provided a sample table to keep track of our calibrations and to organize the results. The name of the table is “Configurations”.
 
 Navigate to the DATA tab. You may wish to open it in a new tab and refer back to this documentation. 
 
-Under TABLES, click on **sample**. If the workspace was cloned correctly, the sample data table will contain rows of genes with additional annotations. 
+Under TABLES, click on **Configurations**. If the workspace was cloned correctly, the Configurations data table will contain one row of workflow configuration data, with a sample ID of "BRCA1_template".  The steps here will show you how to reproduce the contents of this row.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/data_tab_sample_table_1_boxed.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/1_data_tab_configurations_boxed.png)
+
 
 In this example, we are going to be adding a row for the gene BRCA1 to our sample data table. 
 
