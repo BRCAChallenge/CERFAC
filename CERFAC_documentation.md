@@ -18,151 +18,13 @@ This workspace provides a resource for users to validate functional assay calibr
 
 # Overview
 
-In the parlance of Terra documentation, “workflows” refer to scripts with ordered steps written in WDL (Workflow Description Language), while "Analyses" refer to Jupyter notebooks.
+This page contains:
 
-This workspace contains 3 WDL workflows and 1 Jupyter notebook analysis.
+1. A summary of the workflows and analyses available in this workspace, and estimates for the cloud costs required for their execution.  In the parlance of Terra documentation, “workflows” refer to scripts with ordered steps written in WDL (Workflow Description Language), while "Analyses" refer to Jupyter notebooks.
 
-The 3 workflows are used to generate calibration variants for the gene of interest from gnomAD and ClinVar variants.
+2. Step-by-step instructions for their execution
 
-The 3rd workflow requires 2 user-provided files:
-
-- Functional assay data for the gene of interest including scores.
-
-- Clinical observation data pertaining to the gene of interest.
-
-The output will be a tsv file that the user can download and edit.
-
-The Jupyter notebook contains the actual calibration.
-
-To perform Jupyter notebook analysis you will need:
-
-- The output (file) of the three workflows above, which combines the calibration variants the workflow generates for you, the functional assay file you provide, and the clinical observational data file you provide.
-
-- Functional threshold score cutoffs for the functional assay
-
-- Odds ratio threshold
-
-- The population frequency of the relevant disease
-
-- Total control and case counts (from your clinical observational data)
-
-
-## Time and Cost Information
-*Under construction*
-
-https://support.terra.bio/hc/en-us/articles/6123082826651-Overview-Costs-and-billing-in-Terra-GCP
-
-### Memory used: 
-
-Each of the 5 tasks in 1-get_clinvar_variants uses 10 GB of memory, but users may optionally input a smaller or larger amount if necessary when configuring the workflow. 
-
-Memory allocation is more complicated for the 2-get_gnomad_variants workflow. The amount of memory required is larger for longer genes. 
-* The workflow starts at 15 GB or memory and automatically allocates more memory for larger genes: 
-
-* an additional 30 GB for genes longer than 1 million bases.
-
-* and an additional 45 GB for genes longer than 2 million bases (for a total of 90 GB). 
-
-#### Examples: 
-
-* BRCA1: uses about 1 GB of memory for 1-get_clinvar_variants and  uses about 7 GB of memory for the 2-get_gnomad_variants workflow. 
-
-* SRY: a short gene, uses about 1 GB of memory for 1-get_clinvar_variants and X GB for  2-get_gnomad_variants workflow
-
-* DMD, a gene over 2 million bases long, uses about 1 GB of memory for 1-get_clinvar_variants and X GB for  2-get_gnomad_variants workflow.
-
-| Gene              | Gene length | Step | Time | Memory | Cost |
-| :----------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: |
-| SRY           |  827 bases   | 1-get_clinvar_variants | 15 min | 1 GB | $X |
-| SRY           |  827 bases   | 2-get_gnomad_variants | 11 min | 2.5 GB | $X |
-| BRCA1        | 126,032  bases   | 1-get_clinvar_variants | 33 min | 1.5 GB | $X |
-| BRCA1        | 126,032 bases   | 2-get_gnomad_variants | 12 min | 7 GB | $X |
-| SOX5    | 1,033,146 bases   | 1-get_clinvar_variants | ? min | ? GB | $X |
-| SOX5    | 1,033,146 bases   | 2-get_gnomad_variants | ? min | ? GB | $X |
-| DMD    | 2,220,166 bases   | 1-get_clinvar_variants | 12 min | 1 GB | $X |
-| DMD    | 2,220,166 bases   | 2-get_gnomad_variants | 24 min | 83 GB | $X |
-
-The cost of 3-merge_clinical_functional_data will depend on the files the user submits.
-
-
-Cost also depends on whether the workflow is pre-emptible or not. Pre-emptible workflows are cheaper but may fail without warning. [See article on managing cloud costs. ](https://support.terra.bio/hc/en-us/sections/360006459511-Managing-Cloud-costs). See [this article on estimating cloud costs](https://support.terra.bio/hc/en-us/articles/360029772212-Controlling-Google-Cloud-costs-sample-use-cases). 
-
-# Workflows
-## 1-get_clinvar_variants
-**What does it do?**
-
-This WDL pipeline finds ClinVar variants for your gene of interest using the NCBI's [Entrez Direct (EDirect)](https://www.ncbi.nlm.nih.gov/books/NBK179288/) version of the [E-utilities program](https://www.ncbi.nlm.nih.gov/books/NBK25497/). It processes this data and returns  classifications, associated diseases, comments, functional assays results, variant effects, and submission information. ...
-
-**What data does it require as input?**
-
-It requires only the [HGNC gene name](https://www.genenames.org/tools/search/#!/?query=&rows=20&start=0&filter=document_type:gene) (gene symbol). Make sure you are using the most recent HGNC approved name. If unsure, you can check the gene name [here](https://www.genenames.org/tools/multi-symbol-checker/). 
-
-**What does it return as output?**
-
-It outputs a csv file containing rows for each submitter per variant. In other words, if a variant has multiple submissions in ClinVar, it will have multiple rows. (User feedback welcome.)
-
-**Configuration notes**
-
-The workflow is written in WDL1.0, and the tasks are written in a combination of bash and python. 
-See [Terra documentation on how to run a  workflow](https://support.terra.bio/hc/en-us/articles/360036379771-Overview-Running-workflows-in-Terra). 
-
-
-**Time and cost estimates**
-
-
-For more information about controlling Cloud costs, see this article.
-
-## 2-get_gnomad_variants
-**What does it do?**
-
-This WDL pipeline accesses the gnomAD database using the Hail python package and selects the portion of the database pertaining to your gene of interest. It returns variant information from both the exome and genome databases including frequency of variants by ancestry. 
-It also merges variants with the ClinVar file. 
-
-**What data does it require as input?**
-
-It requires the gene name and the ClinVar variants file which is an output of 1-get_clinvar_variants. 
-
-**What does it return as output?**
-A csv file with the gnomAD and ClinVar variants combined for the gene of interest. Variant IDs are in the HGVS DNA coding variant form based on the MANE Select transcript. 
-
-
-**Configuration notes**
-
-The workflow is written in WDL1.0, and the tasks are written in a combination of bash and python. 
-
-
-**Time and cost estimates**
-Below is an example of the time and cost for running the workflow...
-
-This workflow is the most computationally and memory-intensive part of the pipeline. The amount of memory needed will depend on the length of the gene transcript. 
-
-
-
-## 3-merge_clinical_functional_data
-
-**What does it do?**
-
-This WDL pipeline merges the calibration output file with the user-provided clinical and functional assay data files. 
-
-**What data does it require as input?**
-
-It requires the previous two workflows have been run successfully and the user-provided clinical and functional assay data files. These two files should have the **variant ID in HGVS DNA coding variant format as the first column**, based on the **MANE select transcript**. However do not include the transcript ID or gene name in the variant ID. 
-Examples: 
-
-c.884G>A
-
-c.897+9T>C
-
-c.919_920del
-
-[Here is a link describing the HGVS format for DNA coding transcripts.](https://hgvs-nomenclature.org/stable/recommendations/general/) 
-
-**What does it return as output?**
-
-A csv file with all variant information merged. It will be used as input for the Jupyter notebook analyses. 
-
-# Analyses
-(jupyter notebook stuff here)
+This page contains the step-by-step instructions first, followed by the technical summary information.
 
 # Step-by-step instructions
 ## Before you begin: Create your own editable copy (clone) of this WORKSPACE
@@ -293,13 +155,35 @@ This merges the calibration variants, the functional scores file you provide, an
 Because variant nomenclature varies widely, this workflow interacts with an API to obtain the VRS IDs of  the variants within each file, and then uses these VRS IDs to perform a merge. The files can be in any of the following formats: TSV, CSV, or tab separated TXT. 
 However, only **HGVS variants** (cDNA/coding or genomic) *with valid accessions* OR **gnomAD VCF** style variants are supported. **The column with variant IDs must be the first column in your files.** The workflow will fail if that is not the case. 
 
- ## Formatting errors that cause the workflow to abort
+ ## Step 6: Calibrating the assay: R-Jupyter Notebook Analysis
+To calibrate the variants, use the Jupyter notebook analysis in the workspace. 
+
+Make sure the environment is set to use R!
+
+To perform this analysis you will need:
+- The output (file) of the three workflows above, which combines the calibration variants the workflow generates for you, the functional assay file you provide, and the clinical observational data file you provide. 
+- Functional threshold score cutoffs for the functional assay
+- Odds ratio threshold
+- The population frequency of the relevant disease
+- Total control and case counts (from your clinical observational data)
+
+
+
+## Troubleshooting the workflows
+The workflow is optimized to allocate the minimum amount of memory needed based on the length of the gene. However, if the workflow fails due to an out of memory error, you can manually input a higher amount of memory. 
+
+Checking the pre-emptible workflow option block lowers the costs of running a workflow, but there is a chance that your workflow will be preempted-and fail- without giving you a clear error message. 
+
+
+Re-running the workflow with more GB > shouldn't be necessary
+
+### Formatting errors that cause the workflow to abort
 * The first line of the files must be column names. The column names can be whatever you want, but they must be there. 
 * The HGVS variants must contain an accession. A gene name is not sufficient. 
 * A colon (:) must separate the accession from the "g." or "c.". If it is missing in the first variant, the workflow will abort. 
 * gnomAD VCF IDs must have dashes separating the fields, not colons or underscores. 
 
- ## Errors that cause the workflow to skip to the next variant
+ ### Errors that cause the workflow to skip to the next variant
 These errors won't interrupt the workflow, but they will skip to the next variant without generating a VRS_ID. 
 * An HGVS variant contains "inv" for inversion. The API doesn't currently support inversions. 
 * An HGVS variant contains bases (ACTG) after "dup" or "del". Some organizations use this format, but it is not supported by the API. 
@@ -310,28 +194,160 @@ These errors won't interrupt the workflow, but they will skip to the next varian
 Variants that are skipped will be printed to stdout in the Google Cloud environment with the other workflow outputs. 
 
 
-# Troubleshooting the workflows
-The workflow is optimized to allocate the minimum amount of memory needed based on the length of the gene. However, if the workflow fails due to an out of memory error, you can manually input a higher amount of memory. 
-
-Checking the pre-emptible workflow option block lowers the costs of running a workflow, but there is a chance that your workflow will be preempted-and fail- without giving you a clear error message. 
-
-
-Re-running the workflow with more GB > shouldn't be necessary
-
-# Calibrating the assay: R-Jupyter Notebook Analysis
-To calibrate the variants, use the Jupyter notebook analysis in the workspace. 
-
-Make sure the environment is set to use R!
-
-To perform this analysis you will need:
-- [ ] The output (file) of the three workflows above, which combines the calibration variants the workflow generates for you, the functional assay file you provide, and the clinical observational data file you provide. 
-- [ ] Functional threshold score cutoffs for the functional assay
-- [ ] Odds ratio threshold
-- [ ] The population frequency of the relevant disease
-- [ ] Total control and case counts (from your clinical observational data)
+# Placeholder
 
 
 
-Author: archeney@ucsc.edu
 
-Date: November 1, 2024
+# Workflows
+
+
+In the parlance of Terra documentation, “workflows” refer to scripts with ordered steps written in WDL (Workflow Description Language), while "Analyses" refer to Jupyter notebooks.
+
+This workspace contains 3 WDL workflows and 1 Jupyter notebook analysis.
+
+The 3 workflows are used to generate calibration variants for the gene of interest from gnomAD and ClinVar variants.
+
+The 3rd workflow requires 2 user-provided files:
+
+- Functional assay data for the gene of interest including scores.
+
+- Clinical observation data pertaining to the gene of interest.
+
+The output will be a tsv file that the user can download and edit.
+
+The Jupyter notebook contains the actual calibration.
+
+To perform Jupyter notebook analysis you will need:
+
+- The output (file) of the three workflows above, which combines the calibration variants the workflow generates for you, the functional assay file you provide, and the clinical observational data file you provide.
+
+- Functional threshold score cutoffs for the functional assay
+
+- Odds ratio threshold
+
+- The population frequency of the relevant disease
+
+- Total control and case counts (from your clinical observational data)
+
+
+## 1-get_clinvar_variants
+**What does it do?**
+
+This WDL pipeline finds ClinVar variants for your gene of interest using the NCBI's [Entrez Direct (EDirect)](https://www.ncbi.nlm.nih.gov/books/NBK179288/) version of the [E-utilities program](https://www.ncbi.nlm.nih.gov/books/NBK25497/). It processes this data and returns  classifications, associated diseases, comments, functional assays results, variant effects, and submission information. ...
+
+**What data does it require as input?**
+
+It requires only the [HGNC gene name](https://www.genenames.org/tools/search/#!/?query=&rows=20&start=0&filter=document_type:gene) (gene symbol). Make sure you are using the most recent HGNC approved name. If unsure, you can check the gene name [here](https://www.genenames.org/tools/multi-symbol-checker/). 
+
+**What does it return as output?**
+
+It outputs a csv file containing rows for each submitter per variant. In other words, if a variant has multiple submissions in ClinVar, it will have multiple rows. (User feedback welcome.)
+
+**Configuration notes**
+
+The workflow is written in WDL1.0, and the tasks are written in a combination of bash and python. 
+See [Terra documentation on how to run a  workflow](https://support.terra.bio/hc/en-us/articles/360036379771-Overview-Running-workflows-in-Terra). 
+
+
+**Time and cost estimates**
+
+
+For more information about controlling Cloud costs, see this article.
+
+## 2-get_gnomad_variants
+**What does it do?**
+
+This WDL pipeline accesses the gnomAD database using the Hail python package and selects the portion of the database pertaining to your gene of interest. It returns variant information from both the exome and genome databases including frequency of variants by ancestry. 
+It also merges variants with the ClinVar file. 
+
+**What data does it require as input?**
+
+It requires the gene name and the ClinVar variants file which is an output of 1-get_clinvar_variants. 
+
+**What does it return as output?**
+A csv file with the gnomAD and ClinVar variants combined for the gene of interest. Variant IDs are in the HGVS DNA coding variant form based on the MANE Select transcript. 
+
+
+**Configuration notes**
+
+The workflow is written in WDL1.0, and the tasks are written in a combination of bash and python. 
+
+
+**Time and cost estimates**
+Below is an example of the time and cost for running the workflow...
+
+This workflow is the most computationally and memory-intensive part of the pipeline. The amount of memory needed will depend on the length of the gene transcript. 
+
+
+
+## 3-merge_clinical_functional_data
+
+**What does it do?**
+
+This WDL pipeline merges the calibration output file with the user-provided clinical and functional assay data files. 
+
+**What data does it require as input?**
+
+It requires the previous two workflows have been run successfully and the user-provided clinical and functional assay data files. These two files should have the **variant ID in HGVS DNA coding variant format as the first column**, based on the **MANE select transcript**. However do not include the transcript ID or gene name in the variant ID. 
+Examples: 
+
+c.884G>A
+
+c.897+9T>C
+
+c.919_920del
+
+[Here is a link describing the HGVS format for DNA coding transcripts.](https://hgvs-nomenclature.org/stable/recommendations/general/) 
+
+**What does it return as output?**
+
+A csv file with all variant information merged. It will be used as input for the Jupyter notebook analyses. 
+
+## Analyses
+(jupyter notebook stuff here)
+
+## Time and Cost Information
+*Under construction*
+
+https://support.terra.bio/hc/en-us/articles/6123082826651-Overview-Costs-and-billing-in-Terra-GCP
+
+### Memory used: 
+
+Each of the 5 tasks in 1-get_clinvar_variants uses 10 GB of memory, but users may optionally input a smaller or larger amount if necessary when configuring the workflow. 
+
+Memory allocation is more complicated for the 2-get_gnomad_variants workflow. The amount of memory required is larger for longer genes. 
+* The workflow starts at 15 GB or memory and automatically allocates more memory for larger genes: 
+
+* an additional 30 GB for genes longer than 1 million bases.
+
+* and an additional 45 GB for genes longer than 2 million bases (for a total of 90 GB). 
+
+#### Examples: 
+
+* BRCA1: uses about 1 GB of memory for 1-get_clinvar_variants and  uses about 7 GB of memory for the 2-get_gnomad_variants workflow. 
+
+* SRY: a short gene, uses about 1 GB of memory for 1-get_clinvar_variants and X GB for  2-get_gnomad_variants workflow
+
+* DMD, a gene over 2 million bases long, uses about 1 GB of memory for 1-get_clinvar_variants and X GB for  2-get_gnomad_variants workflow.
+
+| Gene              | Gene length | Step | Time | Memory | Cost |
+| :----------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: |
+| SRY           |  827 bases   | 1-get_clinvar_variants | 15 min | 1 GB | $X |
+| SRY           |  827 bases   | 2-get_gnomad_variants | 11 min | 2.5 GB | $X |
+| BRCA1        | 126,032  bases   | 1-get_clinvar_variants | 33 min | 1.5 GB | $X |
+| BRCA1        | 126,032 bases   | 2-get_gnomad_variants | 12 min | 7 GB | $X |
+| SOX5    | 1,033,146 bases   | 1-get_clinvar_variants | ? min | ? GB | $X |
+| SOX5    | 1,033,146 bases   | 2-get_gnomad_variants | ? min | ? GB | $X |
+| DMD    | 2,220,166 bases   | 1-get_clinvar_variants | 12 min | 1 GB | $X |
+| DMD    | 2,220,166 bases   | 2-get_gnomad_variants | 24 min | 83 GB | $X |
+
+The cost of 3-merge_clinical_functional_data will depend on the files the user submits.
+
+
+Cost also depends on whether the workflow is pre-emptible or not. Pre-emptible workflows are cheaper but may fail without warning. [See article on managing cloud costs. ](https://support.terra.bio/hc/en-us/sections/360006459511-Managing-Cloud-costs). See [this article on estimating cloud costs](https://support.terra.bio/hc/en-us/articles/360029772212-Controlling-Google-Cloud-costs-sample-use-cases). 
+
+
+Authors: archeney@ucsc.edu, mcline@ucsc.edu
+
+Date: August 8, 2025
