@@ -57,19 +57,19 @@ Navigate to the DATA tab. You may wish to open it in a new tab and refer back to
 
 Under TABLES, click on **Configurations**. If the workspace was cloned correctly, the Configurations data table will contain one row of workflow configuration data, with a sample ID of "BRCA1_template".  The steps here will show you how to reproduce the contents of this row.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/1_data_tab_configurations_boxed.png)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/1_data_tab_configurations_boxed.png?raw=true)
 
 
 In this example, we are going to be adding a row for the gene BRCA1 to our sample data table. 
 
 At the top left of the data table, click Edit > Add row. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/Edit_add_row.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/2_Edit_add_row.png?raw=true)
 
 
 Fill out the pop-up: The first box will be our sample name. In this case, we will add "BRCA1_run". Additonally, we will click on the > symbol next to GENE_NAME and type "BRCA1". It is important that you type the correct HGNC gene name. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/Add_new_row_BRCA1.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/3_Add_new_row_BRCA1.png?raw=true)
 
 Leave the other inputs blank. 
 
