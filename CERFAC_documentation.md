@@ -81,61 +81,69 @@ It is somewhat complicated to make a file available to a workflow in Terra, but 
 
 **First**, we must upload the file to our workspace Google Cloud Bucket in Terra...
 
-Still in the DATA tab, navigate to OTHER DATA > Files. Click on Files. 
+Navigate to the Files icon at the right side of the screen and click on it.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/click_on_files_data_section.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/4_click_on_files_data_section.png?raw=true)
 
-A list of files in the workspace should appear in blue text (do not worry if you have different files from the screenshot). Click the blue Upload button in the top right corner. It will prompt you to add files locally from your computer. Make sure you add BOTH your clinical/case data file AND your functional assay data file!
+A list of files in the workspace should appear in blue text. Click the blue Upload button in the upper left. It will prompt you to add files locally from your computer. Make sure you add BOTH your clinical/case data file AND your functional assay data file!
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/upload_to_Files_green_arrow.png?raw=true)
+If you are following along with the sample data, you should first download the files [Case_control_data.tsv](https://github.com/BRCAChallenge/CERFAC/blob/main/example_data/Case_control_data.tsv) and [Uncalibrated_functional_assay.tsv](https://github.com/BRCAChallenge/CERFAC/blob/main/example_data/Uncalibrated_functional_assay.tsv) to your local computer, and then upload each file in turn.
+
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/5_upload_to_Files.png?raw=true)
 
 ...**and then** we must add those files to the data table. 
 
-After uploading a file to Files, it will appear in the list of files. If you mouse over the filename, a blue clipboard icon should appear. Click on that to copy the file's URL to your computer's clipboard. Keep in mind whether you are copying the name of the clinical or functional assay data file. 
+After uploading a file to Files, it will appear in the list of files. Mouse over the filename of your clinical data file. A blue clipboard icon should appear. Click on that to copy the file's URL to your computer's clipboard. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/copy_file_url_to_clipboard_files_arrow.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/6_copy_file_url.png?raw=true)
 
 
-Navigate back to the sample data table. In the BRCA1 row, we mouse over to the "functional_assay_file" column. When you mouse over the box, a small blue pencil should appear. Click on it to edit, and paste the file name you copied earlier into the pop-up box. Click save. 
+Navigate back to the Configuration data table. In the BRCA1_run row, we mouse over to the "clinical_data_file" column. When you mouse over the box, a small blue pencil should appear. Click on it to edit, and paste the file name you copied earlier into the pop-up box. Click save. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/editing_value_icon_add_file_name.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/7_edit_value_add_filename.png?raw=true)
 
-Now we've got to do the other file. Go back to the Files section, and copy the URL for the clinical data file, then paste it in the relevant row and column of the sample Data Table. 
+Repeat these steps with your functional assay file.  Make sure to add the link to the clinical data file in the clinical data column, and the link to the functional assay file in the functional assay column.
 
-NOTE: Make sure you are adding the correct files to the correct column! Example: Your functional assay data file should be added to the "functional_assay_file" column, not the "clinical_data_file" column. 
+Your configuration file should now look something like the image below.
 
-## Step 3: Generate ClinVar calibation variants by running the workflow. 
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/8_completed_data_table.png?raw=true)
+
+
+## Step 3 (Optional): Generate ClinVar calibation variants by running the workflow. 
 
 Now that the Data Table has the necessary files, we can run the workflows. We're going to continue to use BRCA1 as an example. 
 
 It is easiest to start the workflows directly from the sample Data Table. 
 
-Check the box next to the row you wish to run, in this case BRCA1. Then click Open With...
+Check the box next to the row you wish to run. In our example, this will be BRCA1_run. Then click the icon labeled (wd1), or Open with Workflow.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/check_box_inBRCA1_row_open_with.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/9_open_with_workflow.png?raw=true)
 
-In the pop-up that appears, click Workflow. 
-
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/open_with_wdlworkflow.png?raw=true)
 
 Then click 1-get_clinvar_variants.
 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/workflows_select_get_cvvars.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/10_workflows_select_get_cvvars.png?raw=true)
 
 The Workflow configuration page should appear. 
 
-The user options are boxed in blue. 
+The user options are boxed in blue. Select "Delete intermediate outputs".
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/workflow_clinvar_variants_top_page.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/11_workflow_clinvar_variants_top_page.png?raw=true)
+
+Scroll farther down on the page to specify the inputs.  The only input variable that need to be configured is the GENE_NAME. Click in the input value box, and ensure that it is set  to "this.GENE_NAME".  That tells the workflow to look in the GENE_NAME column of our data table. This should only need to be configured the first time you run a workflow. You can ignore the other inputs. 
+
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/12_clinvar_workflow_thisgenename.png?raw=true)
 
 
-The only variable inputs that need to be configured is the GENE_NAME. Click in the input value box, and scroll to "this.GENE_NAME".  That tells the workflow to look in the GENE_NAME column of our data table. This should only need to be configured the first time you run a workflow. You can leave the other inputs blank. 
+Then click the blue **Save** button on the right. Then click **Launch**. The **Confirm launch** pop-up should appear.  You can add a comment in the pop-up if you like, and then click Launch in the lower right.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/clinvar_workflow_thisgenename.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/13_Confirm_launch.png?raw=true)
 
+The workflow should begin running.  You should see a screen similar to the one below.  The **Status** will initially read "Queued", indicating that your workflow is waiting to run.  The status will change to "Running" when your workflow begins running.
 
-Then click the **save** button on the right. Then click Run Analysis. You can add a comment in the pop-up if you like, and then click launch. The workflow should begin running!
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/14_Workflow_status.png?raw=true)
+
 
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/Workflow_run_analysis.png?raw=true)
 
