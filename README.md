@@ -7,7 +7,7 @@ A bioinformatics pipeline for validating functional assay predictions against cl
 ## Quick Start
 
 1. **New to CERFAC?** Read [CERFAC_documentation.md](CERFAC_documentation.md) for the full step-by-step guide
-2. **Setting up locally?** See [NEXT_STEPS.md](NEXT_STEPS.md) for testing and [CROMWELL_SETUP.md](CROMWELL_SETUP.md) for workflow execution
+2. **Setting up locally?** See [CROMWELL_SETUP.md](CROMWELL_SETUP.md) for workflow execution
 3. **Want to understand the architecture?** Check [CLAUDE.md](CLAUDE.md) for detailed technical information
 
 ## What It Does
@@ -26,7 +26,7 @@ See [CERFAC_documentation.md](CERFAC_documentation.md) — complete step-by-step
 
 ## Running Locally (Development)
 
-See [NEXT_STEPS.md](NEXT_STEPS.md) for automated testing, or [CROMWELL_SETUP.md](CROMWELL_SETUP.md) for manual workflow execution.
+See [CROMWELL_SETUP.md](CROMWELL_SETUP.md) for workflow execution or [CLAUDE.md](CLAUDE.md) for technical details.
 
 ## Architecture
 
@@ -49,8 +49,7 @@ Three Docker images handle different stages:
 | [CERFAC_documentation.md](CERFAC_documentation.md) | User guide for Terra |
 | [CLAUDE.md](CLAUDE.md) | Developer reference |
 | [CROMWELL_SETUP.md](CROMWELL_SETUP.md) | Local workflow execution |
-| [docker/DOCKER_ANALYSIS.md](docker/DOCKER_ANALYSIS.md) | Docker image details |
-| [NEXT_STEPS.md](NEXT_STEPS.md) | Getting started guide |
+| [docker/README.md](docker/README.md) | Docker image building |
 
 ## Key Features
 
