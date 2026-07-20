@@ -394,7 +394,7 @@ task merge_variants_clinical {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:merge-latest"
+        docker: "brcachallenge/cerfac:merge-v1"
         maxRetries: 3
         preemptible: 1
     }

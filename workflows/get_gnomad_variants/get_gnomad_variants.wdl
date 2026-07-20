@@ -83,7 +83,7 @@ task extract_gene_loc {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:clinvar-latest"
+        docker: "brcachallenge/cerfac:clinvar-v1"
         preemptible: 1
     }
 }
@@ -128,7 +128,7 @@ task get_gnomad_variants {
         memory: memory_calc + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:gnomad-latest"
+        docker: "brcachallenge/cerfac:gnomad-v1"
         maxRetries: 0
         preemptible: 1
     }
