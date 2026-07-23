@@ -99,7 +99,7 @@ task get_gnomad_variants {
         Int GENE_START_LOCUS
         Int GENE_END_LOCUS
         Int GENE_LENGTH
-        File python_script = "get_gnomad_variants.py"
+        String python_script = "get_gnomad_variants.py"
     }
 
     # Dynamic resource allocation based on gene size
