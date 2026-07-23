@@ -95,6 +95,20 @@ This directory contains example data files for testing and demonstration of CERF
       └────────────────────────────┘
 ```
 
+## Workflow Test Results
+
+### get_gnomad_variants Workflow ✅
+- **Status**: Successfully tested on local Cromwell
+- **Input**: BRCA1 gene
+- **Output**: `BRCA1_gnomad_variants_MANE.csv` (3,785 variants)
+- **Notes**: Script paths must be absolute in Docker image (`/root/get_gnomad_variants.py`)
+
+### merge_clinical_functional_data Workflow ⚠️
+- **Status**: WDL executes successfully, Python code runs
+- **Input files**: All properly staged to Docker container
+- **Issue**: Variant normalization via VRS API fails for some variant formats
+- **Next steps**: Filter variant data to use only VRS-compatible formats
+
 ## Using Example Data for Local Testing
 
 ### Quick Test (BRCA1)
