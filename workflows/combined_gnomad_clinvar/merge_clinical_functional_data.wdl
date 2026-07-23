@@ -53,8 +53,6 @@ task merge_variants_clinical {
 
     command <<<
         set -eux -o pipefail
-        echo "MEM_SIZE=$MEM_SIZE" >&2
-        echo "MEM_UNIT=$MEM_UNIT" >&2
 
         python3 <<CODE
         import pandas as pd
