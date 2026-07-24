@@ -53,8 +53,6 @@ task merge_variants_clinical {
 
     command <<<
         set -eux -o pipefail
-        echo "MEM_SIZE=$MEM_SIZE" >&2
-        echo "MEM_UNIT=$MEM_UNIT" >&2
 
         python3 <<CODE
         import pandas as pd
@@ -394,7 +392,7 @@ task merge_variants_clinical {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:merge-latest"
+        docker: "brcachallenge/cerfac:merge-v1"
         maxRetries: 3
         preemptible: 1
     }

@@ -1,4 +1,3 @@
 {
-  "get_gnomad_variants_standalone.GENE_NAME": "BRCA1",
-  "get_gnomad_variants_standalone.get_gnomad_variants.python_script": "workflows/get_gnomad_variants/get_gnomad_variants.py"
+  "get_gnomad_variants_standalone.GENE_NAME": "BRCA1"
 }

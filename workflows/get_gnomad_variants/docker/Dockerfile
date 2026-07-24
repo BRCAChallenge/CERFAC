@@ -14,5 +14,7 @@ RUN pip install psycopg2-binary
 RUN pip3 install pandas
 RUN pip3 --no-cache-dir install gnomad==0.8.0
 
+ADD workflows/get_gnomad_variants/get_gnomad_variants.py /root/
+
 WORKDIR $HOME
 CMD ["/bin/bash"]

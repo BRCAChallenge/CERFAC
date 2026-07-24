@@ -83,7 +83,7 @@ task extract_gene_loc {
         memory: memSizeGB + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:clinvar-latest"
+        docker: "brcachallenge/cerfac:clinvar-v1"
         preemptible: 1
     }
 }
@@ -99,7 +99,7 @@ task get_gnomad_variants {
         Int GENE_START_LOCUS
         Int GENE_END_LOCUS
         Int GENE_LENGTH
-        File python_script = "get_gnomad_variants.py"
+        String python_script = "/root/get_gnomad_variants.py"
     }
 
     # Dynamic resource allocation based on gene size
@@ -128,7 +128,7 @@ task get_gnomad_variants {
         memory: memory_calc + " GB"
         cpu: threadCount
         disks: "local-disk " + diskSizeGB + " SSD"
-        docker: "brcachallenge/cerfac:gnomad-latest"
+        docker: "brcachallenge/cerfac:gnomad-v3"
         maxRetries: 0
         preemptible: 1
     }

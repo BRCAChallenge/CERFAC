@@ -282,10 +282,19 @@ def process_dataframe(df: pd.DataFrame, gene_name: str) -> pd.DataFrame:
 
 def write_outputs(df: pd.DataFrame, gene_name: str) -> None:
     """Write variant count to gnomadcount.txt and full table to CSV."""
+    import os
     count = str(df['txpt_hgvsc_short_gnomad'].nunique())
-    with open("gnomadcount.txt", 'w') as f:
+
+    count_file = os.path.abspath("gnomadcount.txt")
+    csv_file = os.path.abspath(f"{gene_name}_gnomad_variants_MANE.csv")
+
+    print(f"Writing outputs to: {count_file}", flush=True)
+    with open(count_file, 'w') as f:
         f.write(count)
-    df.to_csv(f"{gene_name}_gnomad_variants_MANE.csv", sep=',', index=False)
+
+    print(f"Writing CSV to: {csv_file}", flush=True)
+    df.to_csv(csv_file, sep=',', index=False)
+    print(f"Outputs written successfully", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -295,40 +304,54 @@ def write_outputs(df: pd.DataFrame, gene_name: str) -> None:
 def get_gnomad_variants(gene_name: str, chr_id: str,
                         start_locus: int, end_locus: int, hail_mem_gb: int) -> None:
     import os
-    if 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
-        default_creds = os.path.expanduser('~/.config/gcloud/application_default_credentials.json')
-        if os.path.exists(default_creds):
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = default_creds
+    try:
+        if 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
+            default_creds = os.path.expanduser('~/.config/gcloud/application_default_credentials.json')
+            if os.path.exists(default_creds):
+                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = default_creds
 
-    hl.init(spark_conf={
-        'spark.driver.memory': f"{hail_mem_gb}g",
-        'spark.hadoop.google.cloud.auth.type': 'APPLICATION_DEFAULT'
-    })
+        hl.init(spark_conf={
+            'spark.driver.memory': f"{hail_mem_gb}g",
+            'spark.hadoop.google.cloud.auth.type': 'APPLICATION_DEFAULT'
+        })
 
-    chr_string = f"chr{chr_id}"
-    start_pos = hl.int32(start_locus)
-    stop_pos = hl.int32(end_locus)
+        chr_string = f"chr{chr_id}"
+        start_pos = hl.int32(start_locus)
+        stop_pos = hl.int32(end_locus)
 
-    # Load, select fields, and count
-    v4exomes = select_fields(public_release("exomes").ht(), 'n_alt_alleles_exomes')
-    v4exomes.count()
-    v4genomes = select_fields(public_release("genomes").ht(), 'n_alt_alleles_genomes')
-    v4genomes.count()
+        print(f"Loading gnomAD data for {gene_name}: chr{chr_id}:{start_locus}-{end_locus}", flush=True)
 
-    # Annotate population frequencies
-    v4exomes = annotate_pop_frequencies(v4exomes, 'exome_freq_main_adj_')
-    v4genomes = annotate_pop_frequencies(v4genomes, 'genome_freq_adj_')
+        # Load, select fields, and count
+        v4exomes = select_fields(public_release("exomes").ht(), 'n_alt_alleles_exomes')
+        v4exomes.count()
+        v4genomes = select_fields(public_release("genomes").ht(), 'n_alt_alleles_genomes')
+        v4genomes.count()
 
-    # Filter to gene region, merge, and annotate variant IDs
-    exomes_region = filter_to_gene_region(v4exomes, chr_string, start_pos, stop_pos)
-    genomes_region = filter_to_gene_region(v4genomes, chr_string, start_pos, stop_pos)
-    gnomad_union = merge_exomes_genomes(exomes_region, genomes_region)
-    gnomad_union = annotate_variant_ids(gnomad_union)
+        # Annotate population frequencies
+        v4exomes = annotate_pop_frequencies(v4exomes, 'exome_freq_main_adj_')
+        v4genomes = annotate_pop_frequencies(v4genomes, 'genome_freq_adj_')
 
-    # Convert to pandas, process, and write outputs
-    df = gnomad_union.to_pandas(flatten=True)
-    df = process_dataframe(df, gene_name)
-    write_outputs(df, gene_name)
+        # Filter to gene region, merge, and annotate variant IDs
+        exomes_region = filter_to_gene_region(v4exomes, chr_string, start_pos, stop_pos)
+        genomes_region = filter_to_gene_region(v4genomes, chr_string, start_pos, stop_pos)
+        gnomad_union = merge_exomes_genomes(exomes_region, genomes_region)
+        gnomad_union = annotate_variant_ids(gnomad_union)
+
+        # Convert to pandas, process, and write outputs
+        print(f"Processing variants for {gene_name}", flush=True)
+        df = gnomad_union.to_pandas(flatten=True)
+        df = process_dataframe(df, gene_name)
+        write_outputs(df, gene_name)
+        print(f"Successfully wrote outputs for {gene_name}", flush=True)
+
+    except Exception as e:
+        print(f"ERROR: {str(e)}", flush=True)
+        import traceback
+        traceback.print_exc()
+        # Write empty output file to prevent Cromwell failure
+        with open("gnomadcount.txt", 'w') as f:
+            f.write("0")
+        raise
 
 
 if __name__ == "__main__":
