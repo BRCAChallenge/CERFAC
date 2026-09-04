@@ -9,11 +9,19 @@ workflows:
     authors:
       - name: Allison Cheney, Melissa Cline
         email: mcline@ucsc.edu
-  - name: compute_vrs_digests
+  - name: merge_clinical_functional_data
     subclass: WDL
-    primaryDescriptorPath: /workflows/compute_vrs_digests/compute_vrs_digests.wdl
+    primaryDescriptorPath: /workflows/combined_gnomad_clinvar/merge_clinical_functional_data.wdl
     testParameterFiles:
-      - /workflows/compute_vrs_digests/test_inputs.brca1.json
+      - /workflows/test/merge_clinical_functional_data.brca1.input.json
+    authors:
+      - name: Allison Cheney, Melissa Cline
+        email: mcline@ucsc.edu
+  - name: merge_clinical_functional_data_vrs_offline
+    subclass: WDL
+    primaryDescriptorPath: /workflows/combined_gnomad_clinvar/merge_clinical_functional_data_vrs_offline.wdl
+    testParameterFiles:
+      - /workflows/test/merge_clinical_functional_data_vrs_offline.brca1.input.json
     authors:
       - name: Allison Cheney, Melissa Cline
         email: mcline@ucsc.edu
