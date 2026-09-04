@@ -1,0 +1,7 @@
+{
+  "merge_clinical_data.GENE_NAME": "BRCA1",
+  "merge_clinical_data.VARIANTS_FILE": "example_data/BRCA1_gnomad_variants_MANE.csv",
+  "merge_clinical_data.FUNCTIONAL_SCORES": "example_data/Uncalibrated_functional_assay.tsv",
+  "merge_clinical_data.CLINICAL_DATA": "example_data/Case_control_data.tsv",
+  "merge_clinical_data.VARIANT_TYPE": "gnomad"
+}
