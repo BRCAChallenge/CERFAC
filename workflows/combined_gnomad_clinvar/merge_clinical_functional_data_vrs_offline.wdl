@@ -91,7 +91,6 @@ task compute_vrs_for_variants {
     }
 
     runtime {
-        docker: "docker:latest"
         memory: mem_gb + " GB"
         cpu: cpu
         disks: "local-disk " + disk_gb + " HDD"
