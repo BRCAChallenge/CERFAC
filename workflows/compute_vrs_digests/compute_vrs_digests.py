@@ -14,6 +14,10 @@ import argparse
 import os
 from pathlib import Path
 
+# Disable bioutils network retries for offline operation
+os.environ['BIOUTILS_NCBI_RETRIES'] = '0'
+os.environ['HGVS_SEQREPO_DIR'] = '/seqrepo-GRCh38'
+
 from ga4gh.vrs.dataproxy import create_dataproxy
 from ga4gh.vrs.extras.translator import AlleleTranslator
 
@@ -293,8 +297,8 @@ def main():
     parser.add_argument('--variant-type', required=True,
                        choices=['gnomad', 'functional_assay', 'clinical'],
                        help='Type of variant data')
-    parser.add_argument('--seqrepo-uri', default='seqrepo+file:///seqrepo-GRCh38/master',
-                       help='SeqRepo URI (default: local seqrepo in Docker image)')
+    parser.add_argument('--seqrepo-uri', default=os.environ.get('GA4GH_VRS_DATAPROXY_URI', 'refget:https://www.ncbi.nlm.nih.gov/grc/human/'),
+                       help='SeqRepo URI (default: from GA4GH_VRS_DATAPROXY_URI env var or RefGet public API)')
     parser.add_argument('--assembly', default='GRCh38',
                        help='Reference assembly (default: GRCh38)')
 

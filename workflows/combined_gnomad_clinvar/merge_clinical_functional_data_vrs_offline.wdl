@@ -64,7 +64,7 @@ task compute_vrs_for_variants {
         File variants_file
         String variant_type
         String output_name
-        String docker_image = "brcachallenge/cerfac:vrs-offline-complete"
+        String docker_image = "cerfac:vrs-offline"
         Int mem_gb = 4
         Int cpu = 2
         Int disk_gb = 100
@@ -110,6 +110,7 @@ task merge_vrs_files {
     }
 
     command <<<
+        pip install -q pandas
         python3 << 'MERGE_CODE'
         import pandas as pd
         import sys
