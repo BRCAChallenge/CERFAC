@@ -64,26 +64,17 @@ task compute_vrs_for_variants {
         File variants_file
         String variant_type
         String output_name
-        String docker_image = "cerfac:vrs-offline"
         Int mem_gb = 4
         Int cpu = 2
         Int disk_gb = 100
     }
 
     command <<<
-        set -eux -o pipefail
-
-        # Run VRS computation using local Docker image
-        docker run --rm \
-            -v ~{variants_file}:/input/variants.csv:ro \
-            -v /tmp:/tmp \
-            ~{docker_image} \
-            --input /input/variants.csv \
-            --output /tmp/~{output_name} \
+        cp ~{variants_file} variants.csv
+        python3 /usr/local/bin/compute_vrs_digests.py \
+            --input variants.csv \
+            --output ~{output_name} \
             --variant-type ~{variant_type}
-
-        # Copy output back
-        cp /tmp/~{output_name} .
     >>>
 
     output {
@@ -91,9 +82,9 @@ task compute_vrs_for_variants {
     }
 
     runtime {
+        docker: "cerfac:vrs-offline"
         memory: mem_gb + " GB"
         cpu: cpu
-        disks: "local-disk " + disk_gb + " HDD"
     }
 }
 
@@ -124,18 +115,20 @@ task merge_vrs_files {
         # The VRS computation adds: vrs_id, vrs_digest, genomic_hgvs, vrs_start, vrs_end, vrs_error
         merged = variants_df.copy()
 
-        # Merge functional scores
-        if 'vrs_id' in scores_df.columns:
-            merge_cols = ['vrs_id']
-            if 'vrs_id' in merged.columns:
-                scores_subset = scores_df[[col for col in scores_df.columns if col.startswith(('functional', 'assay', 'score')) or col == 'vrs_id']]
-                merged = merged.merge(scores_subset, on='vrs_id', how='left')
+        # VRS columns to exclude from merge (already in variants_df)
+        vrs_cols = {'vrs_id', 'vrs_digest', 'genomic_hgvs', 'vrs_start', 'vrs_end', 'vrs_error'}
 
-        # Merge clinical data
+        # Merge functional scores - include all cols except VRS duplicates
+        if 'vrs_id' in scores_df.columns:
+            if 'vrs_id' in merged.columns:
+                scores_subset = scores_df[[col for col in scores_df.columns if col not in vrs_cols or col == 'vrs_id']]
+                merged = merged.merge(scores_subset, on='vrs_id', how='left', suffixes=('', '_scores'))
+
+        # Merge clinical data - include all cols except VRS duplicates
         if 'vrs_id' in clinical_df.columns:
             if 'vrs_id' in merged.columns:
-                clinical_subset = clinical_df[[col for col in clinical_df.columns if col.startswith(('case', 'control', 'clinical')) or col == 'vrs_id']]
-                merged = merged.merge(clinical_subset, on='vrs_id', how='left')
+                clinical_subset = clinical_df[[col for col in clinical_df.columns if col not in vrs_cols or col == 'vrs_id']]
+                merged = merged.merge(clinical_subset, on='vrs_id', how='left', suffixes=('', '_clinical'))
 
         # Write output
         merged.to_csv("~{gene_name}_variants_functional_clinical.csv", index=False)
@@ -153,6 +146,5 @@ task merge_vrs_files {
         docker: "python:3.11"
         memory: mem_gb + " GB"
         cpu: cpu
-        disks: "local-disk " + disk_gb + " HDD"
     }
 }
