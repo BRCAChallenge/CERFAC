@@ -56,7 +56,52 @@ COPY compute_vrs_digests.py /usr/local/bin/compute_vrs_digests.py
 RUN chmod +x /usr/local/bin/compute_vrs_digests.py
 
 # Entrypoint: start PostgreSQL, then run script with proper argument handling
-RUN printf '#!/bin/bash\necho "Starting PostgreSQL + UTA..."\n/etc/init.d/postgresql start 2>&1 || true\nsleep 2\nargs=()\nfor arg in "$@"; do\n  [ "$arg" != "--" ] && args+=("$arg")\ndone\nexec python3 /usr/local/bin/compute_vrs_digests.py "${args[@]}"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+RUN cat > /entrypoint.sh << 'EOENT' && chmod +x /entrypoint.sh
+#!/bin/bash
+set -e
+
+echo "Starting PostgreSQL + UTA..."
+
+# Ensure postgres user can write to pgdata
+mkdir -p /pgdata
+chown -R postgres:postgres /pgdata 2>/dev/null || true
+
+# Start PostgreSQL as postgres user
+echo "Launching postgres..."
+su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D /pgdata -l /tmp/postgres.log start -w" 2>&1 | head -5
+
+# Wait for PostgreSQL to be ready with multiple checks
+echo "Verifying PostgreSQL connection..."
+for i in {1..60}; do
+  if su - postgres -c "/usr/lib/postgresql/*/bin/pg_isready -h localhost" 2>/dev/null | grep -q "accepting"; then
+    echo "✓ PostgreSQL is accepting connections"
+    break
+  fi
+  if [ $i -eq 60 ]; then
+    echo "✗ PostgreSQL failed to start after 60 seconds"
+    cat /tmp/postgres.log | tail -20
+    exit 1
+  fi
+  echo "Waiting for PostgreSQL... ($i/60)"
+  sleep 1
+done
+
+# Verify UTA database exists and is accessible
+echo "Verifying UTA database..."
+su - postgres -c "/usr/lib/postgresql/*/bin/psql -c 'SELECT count(*) FROM uta_20241220.exon LIMIT 1;' -d uta 2>&1" > /dev/null || {
+  echo "Warning: UTA database not fully accessible"
+}
+
+# Parse arguments (skip the script path if present)
+args=()
+for arg in "$@"; do
+  [ "$arg" != "--" ] && args+=("$arg")
+done
+
+echo "Running VRS script..."
+# Run the VRS script
+exec python3 /usr/local/bin/compute_vrs_digests.py "${args[@]}"
+EOENT
 
 WORKDIR /data
 ENTRYPOINT ["/entrypoint.sh"]

@@ -49,24 +49,35 @@ def compute_vrs_digest(translator: AlleleTranslator, variant_str: str, variant_f
         Dictionary with variant_id, vrs_digest, genomic_hgvs, and location info
     """
     try:
-        allele = translator.translate_from(variant_str, variant_format)
+        try:
+            allele = translator.translate_from(variant_str, variant_format)
+        except Exception as e:
+            return {
+                "variant_id": variant_str,
+                "vrs_digest": None,
+                "vrs_id": None,
+                "genomic_hgvs": None,
+                "vrs_start": None,
+                "vrs_end": None,
+                "error": f"translate_from: {type(e).__name__}"
+            }
 
         # Extract genomic HGVS representation
-        genomic_hgvs_list = translator.translate_to(allele, "hgvs")
-        genomic_hgvs = genomic_hgvs_list[0] if genomic_hgvs_list else None
+        try:
+            genomic_hgvs_list = translator.translate_to(allele, "hgvs")
+            genomic_hgvs = genomic_hgvs_list[0] if genomic_hgvs_list else None
+        except Exception as e:
+            # Still return the allele even if HGVS translation fails
+            genomic_hgvs = None
 
         # Extract location information
-        location = allele.location
-        chrom = None
-        pos_start = None
-        pos_end = None
-
-        if location and location.sequenceReference:
-            # Try to extract chromosome from sequence reference
-            # This is approximate - full resolution requires sequence mapping
-            seq_ref = location.sequenceReference.refgetAccession
-            pos_start = location.start
-            pos_end = location.end
+        try:
+            location = allele.location
+            pos_start = location.start if location else None
+            pos_end = location.end if location else None
+        except Exception as e:
+            pos_start = None
+            pos_end = None
 
         return {
             "variant_id": variant_str,
@@ -85,7 +96,7 @@ def compute_vrs_digest(translator: AlleleTranslator, variant_str: str, variant_f
             "genomic_hgvs": None,
             "vrs_start": None,
             "vrs_end": None,
-            "error": str(e)
+            "error": f"outer: {type(e).__name__}: {str(e)[:50]}"
         }
 
 
