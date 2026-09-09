@@ -9,3 +9,11 @@ workflows:
     authors:
       - name: Allison Cheney, Melissa Cline
         email: mcline@ucsc.edu
+  - name: compute_vrs_digests
+    subclass: WDL
+    primaryDescriptorPath: /workflows/compute_vrs_digests/compute_vrs_digests.wdl
+    testParameterFiles:
+      - /workflows/compute_vrs_digests/test_inputs.brca1.json
+    authors:
+      - name: Allison Cheney, Melissa Cline
+        email: mcline@ucsc.edu

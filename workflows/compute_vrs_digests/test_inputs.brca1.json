@@ -1,0 +1,8 @@
+{
+  "compute_vrs_digests.gene_name": "BRCA1",
+  "compute_vrs_digests.gnomad_variants_file": "example_data/BRCA1_gnomad_variants_MANE.csv",
+  "compute_vrs_digests.functional_scores_file": "example_data/Uncalibrated_functional_assay.tsv",
+  "compute_vrs_digests.clinical_data_file": "example_data/Case_control_data.tsv",
+  "compute_vrs_digests.assembly": "GRCh38",
+  "compute_vrs_digests.docker_image": "brcachallenge/cerfac:vrs-digests-latest"
+}
