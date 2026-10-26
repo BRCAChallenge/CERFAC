@@ -100,11 +100,11 @@ def compute_vrs_digest(translator: AlleleTranslator, variant_str: str, variant_f
         }
 
 
-def process_gnomad_variants(input_file: str, translator: AlleleTranslator, output_file: str):
+def process_gnomad_variants(input_file: str, translator: AlleleTranslator, output_file: str, variant_id_column: str = None):
     """
     Process gnomAD variants with VCF format IDs.
 
-    Input: CSV with CERFAC_variant_id_VCF_gnomad column
+    Input: CSV with CERFAC_variant_id_VCF_gnomad column (or variant_id_column if given)
     Output: CSV with original columns + vrs_digest, genomic_hgvs columns
     """
     print(f"Processing gnomAD variants from {input_file}")
@@ -113,19 +113,21 @@ def process_gnomad_variants(input_file: str, translator: AlleleTranslator, outpu
     rows_with_digest = 0
     rows_with_error = 0
 
-    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+    with open(input_file, 'r', encoding='utf-8-sig') as infile, open(output_file, 'w', newline='') as outfile:
         reader = csv.DictReader(infile)
+        reader.fieldnames = [name.replace('﻿', '') for name in reader.fieldnames]
 
-        # Ensure output file has VCF column
-        if 'CERFAC_variant_id_VCF_gnomad' not in reader.fieldnames:
-            raise ValueError("Input file missing CERFAC_variant_id_VCF_gnomad column")
+        id_col = variant_id_column or 'CERFAC_variant_id_VCF_gnomad'
+        if id_col not in reader.fieldnames:
+            raise ValueError(f"Input file missing variant ID column '{id_col}'")
+        print(f"  Using column '{id_col}' for variant IDs")
 
         fieldnames = reader.fieldnames + ['genomic_hgvs', 'vrs_digest', 'vrs_id', 'vrs_start', 'vrs_end', 'vrs_error']
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
 
         for row in reader:
-            variant_id = row['CERFAC_variant_id_VCF_gnomad']
+            variant_id = row[id_col]
 
             # Skip empty or invalid variants
             if not variant_id or variant_id.startswith('NA') or variant_id.lower() == 'none':
@@ -160,17 +162,17 @@ def process_gnomad_variants(input_file: str, translator: AlleleTranslator, outpu
     print(f"Output written to {output_file}")
 
 
-def process_functional_assay_variants(input_file: str, translator: AlleleTranslator, output_file: str):
+def process_functional_assay_variants(input_file: str, translator: AlleleTranslator, output_file: str, variant_id_column: str = None):
     """
-    Process functional assay variants with separate chr/pos/ref/alt columns.
+    Process functional assay variants.
 
-    Input: TSV/CSV with chr, pos, ref, alt columns
+    Input: TSV/CSV with chr, pos, ref, alt columns, or a variant ID column if variant_id_column is given
     Output: CSV with original columns + variant_id_vcf, genomic_hgvs, vrs_digest columns
     """
     print(f"Processing functional assay variants from {input_file}")
 
     # Detect delimiter
-    with open(input_file, 'r') as f:
+    with open(input_file, 'r', encoding='utf-8-sig') as f:
         first_line = f.readline()
         delimiter = '\t' if '\t' in first_line else ','
 
@@ -178,30 +180,50 @@ def process_functional_assay_variants(input_file: str, translator: AlleleTransla
     rows_with_digest = 0
     rows_with_error = 0
 
-    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+    with open(input_file, 'r', encoding='utf-8-sig') as infile, open(output_file, 'w', newline='') as outfile:
         reader = csv.DictReader(infile, delimiter=delimiter)
+        reader.fieldnames = [name.replace('﻿', '') for name in reader.fieldnames]
 
-        # Ensure required columns exist
-        required = {'chr', 'pos', 'ref', 'alt'}
-        if not required.issubset(set(reader.fieldnames)):
-            raise ValueError(f"Input file missing required columns: {required}")
+        if variant_id_column:
+            if variant_id_column not in reader.fieldnames:
+                raise ValueError(f"Input file missing variant ID column '{variant_id_column}'")
+            print(f"  Using column '{variant_id_column}' for variant IDs")
+        else:
+            required = {'chr', 'pos', 'ref', 'alt'}
+            if not required.issubset(set(reader.fieldnames)):
+                raise ValueError(f"Input file missing required columns: {required}")
 
         fieldnames = reader.fieldnames + ['variant_id_vcf', 'genomic_hgvs', 'vrs_digest', 'vrs_id', 'vrs_start', 'vrs_end', 'vrs_error']
         writer = csv.DictWriter(outfile, fieldnames=fieldnames, delimiter=',')
         writer.writeheader()
 
         for row in reader:
-            chr_val = str(row['chr']).strip()
-            pos_val = str(row['pos']).strip()
-            ref_val = str(row['ref']).strip().upper()
-            alt_val = str(row['alt']).strip().upper()
+            if variant_id_column:
+                variant_id_vcf = str(row[variant_id_column]).strip()
+                row['variant_id_vcf'] = variant_id_vcf
+                if not variant_id_vcf or variant_id_vcf.lower() in ('na', 'none'):
+                    row['genomic_hgvs'] = None
+                    row['vrs_digest'] = None
+                    row['vrs_id'] = None
+                    row['vrs_start'] = None
+                    row['vrs_end'] = None
+                    row['vrs_error'] = 'Empty or NA variant'
+                    rows_with_error += 1
+                    writer.writerow(row)
+                    rows_processed += 1
+                    continue
+            else:
+                chr_val = str(row['chr']).strip()
+                pos_val = str(row['pos']).strip()
+                ref_val = str(row['ref']).strip().upper()
+                alt_val = str(row['alt']).strip().upper()
 
-            # Construct VCF format variant ID
-            variant_id_vcf = f"{chr_val}-{pos_val}-{ref_val}-{alt_val}"
-            row['variant_id_vcf'] = variant_id_vcf
+                # Construct VCF format variant ID
+                variant_id_vcf = f"{chr_val}-{pos_val}-{ref_val}-{alt_val}"
+                row['variant_id_vcf'] = variant_id_vcf
 
             # Skip if any component is missing or NA
-            if any(v.lower() in ('na', 'none', '') for v in [chr_val, pos_val, ref_val, alt_val]):
+            if not variant_id_column and any(v.lower() in ('na', 'none', '') for v in [chr_val, pos_val, ref_val, alt_val]):
                 row['genomic_hgvs'] = None
                 row['vrs_digest'] = None
                 row['vrs_id'] = None
@@ -233,17 +255,17 @@ def process_functional_assay_variants(input_file: str, translator: AlleleTransla
     print(f"Output written to {output_file}")
 
 
-def process_clinical_variants(input_file: str, translator: AlleleTranslator, output_file: str):
+def process_clinical_variants(input_file: str, translator: AlleleTranslator, output_file: str, variant_id_column: str = None):
     """
-    Process clinical data variants with variant IDs in second column.
+    Process clinical data variants.
 
-    Input: TSV/CSV with variant IDs in second column (VCF format)
+    Input: TSV/CSV with variant IDs in the second column (VCF format), or variant_id_column if given
     Output: CSV with original columns + genomic_hgvs, vrs_digest columns
     """
     print(f"Processing clinical variants from {input_file}")
 
     # Detect delimiter
-    with open(input_file, 'r') as f:
+    with open(input_file, 'r', encoding='utf-8-sig') as f:
         first_line = f.readline()
         delimiter = '\t' if '\t' in first_line else ','
 
@@ -251,14 +273,16 @@ def process_clinical_variants(input_file: str, translator: AlleleTranslator, out
     rows_with_digest = 0
     rows_with_error = 0
 
-    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+    with open(input_file, 'r', encoding='utf-8-sig') as infile, open(output_file, 'w', newline='') as outfile:
         reader = csv.DictReader(infile, delimiter=delimiter)
+        reader.fieldnames = [name.replace('﻿', '') for name in reader.fieldnames]
 
-        # Get second column name (should be variant ID column like 'hg38')
         if len(reader.fieldnames) < 2:
             raise ValueError("Input file must have at least 2 columns")
 
-        variant_id_col = reader.fieldnames[1]
+        variant_id_col = variant_id_column or reader.fieldnames[1]
+        if variant_id_col not in reader.fieldnames:
+            raise ValueError(f"Input file missing variant ID column '{variant_id_col}'")
         print(f"  Using column '{variant_id_col}' for variant IDs")
 
         fieldnames = reader.fieldnames + ['genomic_hgvs', 'vrs_digest', 'vrs_id', 'vrs_start', 'vrs_end', 'vrs_error']
@@ -312,6 +336,8 @@ def main():
                        help='SeqRepo URI (default: from GA4GH_VRS_DATAPROXY_URI env var or RefGet public API)')
     parser.add_argument('--assembly', default='GRCh38',
                        help='Reference assembly (default: GRCh38)')
+    parser.add_argument('--variant-id-column', default=None,
+                       help='Column holding the variant ID (default: per-type built-in column)')
 
     args = parser.parse_args()
 
@@ -335,11 +361,11 @@ def main():
 
     try:
         if args.variant_type == 'gnomad':
-            process_gnomad_variants(args.input, translator, args.output)
+            process_gnomad_variants(args.input, translator, args.output, args.variant_id_column)
         elif args.variant_type == 'functional_assay':
-            process_functional_assay_variants(args.input, translator, args.output)
+            process_functional_assay_variants(args.input, translator, args.output, args.variant_id_column)
         elif args.variant_type == 'clinical':
-            process_clinical_variants(args.input, translator, args.output)
+            process_clinical_variants(args.input, translator, args.output, args.variant_id_column)
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         import traceback

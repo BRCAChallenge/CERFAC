@@ -89,6 +89,13 @@ java -Dconfig.file=workflows/combined_gnomad_clinvar/cromwell.conf \
 }
 ```
 
+**Variant ID column (optional):** set the column holding the variant ID per file. Defaults: gnomAD `CERFAC_variant_id_VCF_gnomad`, functional scores chr/pos/ref/alt columns, clinical second column.
+```json
+  "merge_clinical_data.VARIANT_ID_COLUMN_VARIANTS": "CERFAC_variant_id_VCF_gnomad",
+  "merge_clinical_data.VARIANT_ID_COLUMN_FUNCTIONAL": "my_variant",
+  "merge_clinical_data.VARIANT_ID_COLUMN_CLINICAL": "hg38"
+```
+
 **Output:**
 - Location: `cromwell-executions/merge_clinical_data/[workflow-id]/call-merge_vrs_files/execution/`
 - File: `[GENE_NAME]_variants_functional_clinical.csv`
