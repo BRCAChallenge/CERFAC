@@ -3,5 +3,8 @@
   "merge_clinical_data.VARIANTS_FILE": "example_data/BRCA1_gnomad_variants_MANE.csv",
   "merge_clinical_data.FUNCTIONAL_SCORES": "example_data/Uncalibrated_functional_assay.tsv",
   "merge_clinical_data.CLINICAL_DATA": "example_data/Case_control_data.tsv",
-  "merge_clinical_data.VARIANT_TYPE": "gnomad"
+  "merge_clinical_data.VARIANT_TYPE": "gnomad",
+  "merge_clinical_data.VARIANT_ID_COLUMN_VARIANTS": "CERFAC_variant_id_VCF_gnomad",
+  "merge_clinical_data.VARIANT_ID_COLUMN_CLINICAL": "hg38",
+  "merge_clinical_data.FUNCTIONAL_LOCUS_COLUMNS": "chr,pos,ref,alt"
 }

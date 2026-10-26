@@ -15,7 +15,8 @@ workflow merge_clinical_data {
         CLINICAL_DATA: "File with user-supplied case data and VCF or HGVS cDNA or HGVS genomic variant names"
         VARIANT_ID_COLUMN_VARIANTS: "Column in VARIANTS_FILE holding the variant ID. Default: CERFAC_variant_id_VCF_gnomad"
         VARIANT_ID_COLUMN_FUNCTIONAL: "Column in FUNCTIONAL_SCORES holding the variant ID. Default: chr/pos/ref/alt columns"
-        VARIANT_ID_COLUMN_CLINICAL: "Column in CLINICAL_DATA holding the variant ID. Default: second column"
+        VARIANT_ID_COLUMN_CLINICAL: "Column in CLINICAL_DATA holding the variant ID. Default: auto-detected VCF-style column, else second column"
+        FUNCTIONAL_LOCUS_COLUMNS: "Comma-separated chr,pos,ref,alt columns in FUNCTIONAL_SCORES, used when no variant ID column is found. Default: auto-detected by name"
     }
     input {
         String GENE_NAME
@@ -26,6 +27,7 @@ workflow merge_clinical_data {
         String? VARIANT_ID_COLUMN_VARIANTS
         String? VARIANT_ID_COLUMN_FUNCTIONAL
         String? VARIANT_ID_COLUMN_CLINICAL
+        String? FUNCTIONAL_LOCUS_COLUMNS
     }
 
     # Compute VRS digests for each input file using local Docker image (no network)
@@ -42,7 +44,8 @@ workflow merge_clinical_data {
             variants_file=FUNCTIONAL_SCORES,
             variant_type="functional_assay",
             output_name="functional_scores_with_vrs.csv",
-            variant_id_column=VARIANT_ID_COLUMN_FUNCTIONAL
+            variant_id_column=VARIANT_ID_COLUMN_FUNCTIONAL,
+            locus_columns=FUNCTIONAL_LOCUS_COLUMNS
     }
 
     call compute_vrs_for_variants as vrs_clinical {
@@ -74,6 +77,7 @@ task compute_vrs_for_variants {
         String variant_type
         String output_name
         String? variant_id_column
+        String? locus_columns
         Int mem_gb = 4
         Int cpu = 2
         Int disk_gb = 100
@@ -85,7 +89,8 @@ task compute_vrs_for_variants {
             --input variants.csv \
             --output ~{output_name} \
             --variant-type ~{variant_type} \
-            ~{if defined(variant_id_column) then "--variant-id-column " + select_first([variant_id_column]) else ""}
+            ~{if defined(variant_id_column) then "--variant-id-column " + select_first([variant_id_column]) else ""} \
+            ~{if defined(locus_columns) then "--locus-columns " + select_first([locus_columns]) else ""}
     >>>
 
     output {
