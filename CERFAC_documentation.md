@@ -89,7 +89,7 @@ A list of files in the workspace should appear in blue text. Click the blue Uplo
 
 If you are following along with the sample data, you should first download the files [Case_control_data.tsv](https://github.com/BRCAChallenge/CERFAC/blob/main/example_data/Case_control_data.tsv) and [Uncalibrated_functional_assay.tsv](https://github.com/BRCAChallenge/CERFAC/blob/main/example_data/Uncalibrated_functional_assay.tsv) to your local computer, and then upload each file in turn.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/5_upload_to_Files.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/5_upload_to_files.png?raw=true)
 
 ...**and then** we must add those files to the data table. 
 
