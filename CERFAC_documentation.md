@@ -69,7 +69,7 @@ At the top left of the data table, click Edit > Add row.
 
 Fill out the pop-up: The first box will be our sample name. In this case, we will add "BRCA1_run". Additonally, we will click on the > symbol next to GENE_NAME and type "BRCA1". It is important that you type the correct HGNC gene name. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/3_Add_new_row_BRCA1.png?raw=true)
+<img src="https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/3_Add_new_row_BRCA1.png?raw=true" width="600">
 
 Leave the other inputs blank. 
 
@@ -109,7 +109,7 @@ Your configuration file should now look something like the image below.
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/8_completed_data_table.png?raw=true)
 
 
-## Step 3 (Optional): Generate ClinVar calibation variants by running the workflow. 
+## Step 3: Generate gnomAD calibration variants by running the get_gnomad_variants workflow.
 
 Now that the Data Table has the necessary files, we can run the workflows. We're going to continue to use BRCA1 as an example. 
 
@@ -120,20 +120,19 @@ Check the box next to the row you wish to run. In our example, this will be BRCA
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/9_open_with_workflow.png?raw=true)
 
 
-Then click 1-get_clinvar_variants.
+Then click get_gnomad_variants.
 
-
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/10_workflows_select_get_cvvars.png?raw=true)
+<img src="https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/10_workflows_select_get_gnomad.png" width="600">
 
 The Workflow configuration page should appear. 
 
 The user options are boxed in blue. Select "Delete intermediate outputs".
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/11_workflow_clinvar_variants_top_page.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/11_workflow_gnomad_variants_top_page.png?raw=true)
 
 Scroll farther down on the page to specify the inputs.  The only input variable that need to be configured is the GENE_NAME. Click in the input value box, and ensure that it is set  to "this.GENE_NAME".  That tells the workflow to look in the GENE_NAME column of our data table. This should only need to be configured the first time you run a workflow. You can ignore the other inputs. 
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/12_clinvar_workflow_thisgenename.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/12_gnomad_workflow_thisgenename.png?raw=true)
 
 
 Then click the blue **Save** button on the right. Then click **Launch**. The **Confirm launch** pop-up should appear.  You can add a comment in the pop-up if you like, and then click Launch in the lower right.
@@ -146,13 +145,6 @@ The workflow should begin running.  You should see a screen similar to the one b
 
 
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/Workflow_run_analysis.png?raw=true)
-
-
-
-## Step 4: Generate gnomAD calibration variants by running the 2-get_gnomad_variants workflow. 
-
-Repeat step 3, this time selecting the "2-get_gnomad_variants" workflow. Because of the size of the gnomAD database, this takes the longest to run. The processing time, and the memory needed to run the workflow, will depend in part on the length of the gene of interest. The workflow is optimized to allocate the minimum amount of memory needed based on the length of the gene. 
-
 
 
 ## Step 5: Merge calibration variants using the 3-merge_clinical_functional_data workflow.
