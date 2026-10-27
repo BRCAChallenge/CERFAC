@@ -98,7 +98,7 @@ task compute_vrs_for_variants {
     }
 
     runtime {
-        docker: "brcachallenge/cerfac:vrs-offline"
+        docker: "brcachallenge/cerfac@sha256:6be013392eac1debbff1f7e8273877b6bbb5d494ef8fb7abe8ed9ffb8294bf9c"
         memory: mem_gb + " GB"
         cpu: cpu
     }
