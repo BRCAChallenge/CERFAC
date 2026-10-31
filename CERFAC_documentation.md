@@ -115,20 +115,24 @@ Now that the Data Table has the necessary files, we can run the workflows. We're
 
 It is easiest to start the workflows directly from the sample Data Table. 
 
-Check the box next to the row you wish to run. In our example, this will be BRCA1_run. Then click the icon labeled (wd1), or Open with Workflow.
+Check the box next to the row you wish to run. In our example, this will be BRCA1_run.
+
+Then click the icon labeled (wd1), or Open with Workflow.
 
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/9_open_with_workflow.png?raw=true)
 
 
 Then click get_gnomad_variants.
 
-<img src="https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/10_workflows_select_get_gnomad.png" width="600">
+<img
+src="https://raw.githubusercontent.com/BRCAChallenge/CERFAC/main/doc_images/
+10_workflows_select_get_gnomad.png" width="600">
 
 The Workflow configuration page should appear. 
 
 The user options are boxed in blue. Select "Delete intermediate outputs".
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/11_workflow_gnomad_variants_top_page.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/11_workflow_gnomad_variants_launch.png?raw=true)
 
 Scroll farther down on the page to specify the inputs.  The only input variable that need to be configured is the GENE_NAME. Click in the input value box, and ensure that it is set  to "this.GENE_NAME".  That tells the workflow to look in the GENE_NAME column of our data table. This should only need to be configured the first time you run a workflow. You can ignore the other inputs. 
 
@@ -143,8 +147,14 @@ The workflow should begin running.  You should see a screen similar to the one b
 
 ![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/14_Workflow_status.png?raw=true)
 
+After a few minutes, the status should change to Succeeded.  At this time, click on the Data button to return to the Data table.
 
-![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/Workflow_run_analysis.png?raw=true)
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/15_Workflow_status_succeeded.png?raw=true)
+
+At this time, when you examine your row in the Data table, you should see values filled in for columns including *chr_id*, *gene_start*, *gene_end*, *gene_length*, *output_gnomad_variants_count* and *output_gnomad_variants_file*
+
+![](https://github.com/BRCAChallenge/CERFAC/blob/main/doc_images/16_configurations_table_with_gnomad_results.png?raw=true)
+
 
 
 ## Step 5: Merge calibration variants using the 3-merge_clinical_functional_data workflow.
