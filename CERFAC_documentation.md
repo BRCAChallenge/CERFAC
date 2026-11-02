@@ -157,10 +157,9 @@ At this time, when you examine your row in the Data table, you should see values
 
 
 
-## Step 5: Merge calibration variants using the 3-merge_clinical_functional_data workflow.
+## Step 4: Merge calibration variants with your clinical and functional data
 
-Repeat step 3, this time selecting the "3-merge_clinical_functional_data" workflow.
-This merges the calibration variants, the functional scores file you provide, and the clinical observational data file you provide. 
+Repeat the steps in Step 3 to open a workflow. This time, select the workflow "merge_clinical_functional_data_vrs_offline". This merges the calibration variants, the functional scores file you provided, and the clinical observational data file you provided. 
 
 
 Because variant nomenclature varies widely, this workflow interacts with an API to obtain the VRS IDs of  the variants within each file, and then uses these VRS IDs to perform a merge. The files can be in any of the following formats: TSV, CSV, or tab separated TXT. 
