@@ -17,3 +17,9 @@ workflows:
     authors:
       - name: Allison Cheney, Melissa Cline
         email: mcline@ucsc.edu
+  - name: notebook_or_calculations
+    subclass: WDL
+    primaryDescriptorPath: /workflows/notebook_or_calculations/notebook_or_calculations.wdl
+    authors:
+      - name: Allison Cheney, Melissa Cline
+        email: mcline@ucsc.edu
